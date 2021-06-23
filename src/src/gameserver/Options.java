@@ -2,6 +2,11 @@ package gameserver;
 
 import java.util.ArrayList;
 
+/**
+ *  Objetos Options contêm especificações sobre uma partida de Taalt: o número de jogadores,
+ *  o nome dos jogadores, as dimensões do tabuleiro (m x n), o tamanho da sequência de peças
+ *  requerida para vitória (k), e se o modo gravidade está ativado.
+ */
 public class Options {
     int numPlayers;
     ArrayList<String> names;

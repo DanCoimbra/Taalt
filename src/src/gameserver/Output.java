@@ -1,5 +1,10 @@
 package gameserver;
 
+/**
+ *  Objetos Output contêm informações do estado atual do jogo: o número total de jogadores,
+ *  o número da rodada atual, o nome do jogador atual, se o modo gravidade está ativado, e
+ *  se o jogo está em andamento (GameCondition.START) ou terminado (GameCondition.END).
+ */
 public class Output {
     int numPlayers;
     int rounds;

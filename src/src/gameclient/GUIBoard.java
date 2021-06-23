@@ -28,6 +28,7 @@ public class GUIBoard extends JPanel implements ICommandReceiver, ICommandProduc
         super();
         this.rows = rows;
         this.cols = cols;
+        this.matrix = new GUICell[rows][cols];
         this.setPreferredSize(new Dimension(width, height));
         this.setBackground(Color.BLACK);
         this.setBorder(BorderFactory.createLineBorder(Color.BLACK));

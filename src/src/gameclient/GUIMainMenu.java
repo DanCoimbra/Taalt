@@ -24,6 +24,7 @@ public class GUIMainMenu extends JPanel implements IOptionsProducer {
 
     public GUIMainMenu() {
         super();
+        this.optionsReceiverList = new ArrayList<IOptionsReceiver>();
         this.options = new Options();
         this.setLayout(new GridLayout(5, 1, 0, 50));
         JLabel titleScreen = new JLabel(new ImageIcon("assets/titlescreen200x60.png"));
@@ -143,6 +144,7 @@ public class GUIMainMenu extends JPanel implements IOptionsProducer {
 
         InputGravity(GUIMainMenu outer) {
             super();
+            this.outer = outer;
             this.setLayout(new GridLayout(1, 2));
             JLabel label = new JLabel("Gravity mode: ");
             JToggleButton toggle = new JToggleButton();
@@ -169,6 +171,7 @@ public class GUIMainMenu extends JPanel implements IOptionsProducer {
 
         StartButton(GUIMainMenu outer) {
             super();
+            this.outer = outer;
             this.button = new JButton("Start");
             button.addActionListener(this);
             this.add(button);

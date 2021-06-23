@@ -31,6 +31,8 @@ public class GUICell extends JButton implements ICommandProducer, IContentReceiv
     public GUICell(Point pos) {
         super();
         this.pos = pos;
+        this.commandReceiverList = new ArrayList<ICommandReceiver>();
+        this.contentProducerList = new ArrayList<IContentProducer>();
         this.paint(-1);
 
         // Remove bordas e uma interação gráfica indesejável
@@ -68,9 +70,8 @@ public class GUICell extends JButton implements ICommandProducer, IContentReceiv
     /** Implementa métodos de IContentReceiver. */
     @Override
     public void noticeContentUpdate(IContentProducer source) {
-        PlayerID playerID = source.sendContent();
-        int numericID = playerID.ordinal() - 1;
-        this.paint(numericID);
+        int playerID = source.sendContent();
+        this.paint(playerID - 1);
 
         // Bloqueia novos cliques
         this.setEnabled(false);

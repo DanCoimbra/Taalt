@@ -35,7 +35,7 @@ public class GUIController extends JFrame implements IOptionsReceiver {
 
         // Inicializa o menu principal, pelo qual o jogador pode inserir opções e iniciar o jogo.
         this.menuScreen = new GUIMainMenu();
-        menuScreen.addOptionsReceiver(this);
+        this.menuScreen.addOptionsReceiver(this);
         this.getContentPane().add(this.menuScreen);
 
         this.setVisible(true);
@@ -66,9 +66,9 @@ public class GUIController extends JFrame implements IOptionsReceiver {
     }
 
     public void end() {
-        assert this.gameServer != null;
         this.getContentPane().remove(this.gameScreen);
         this.gameScreen = null;
+        this.gameServer = null;
         this.menuScreen.setVisible(true);
     }
 }

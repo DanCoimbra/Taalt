@@ -2,6 +2,10 @@ package gameserver;
 
 import java.util.ArrayList;
 
+/**
+ *  Representa um jogador de uma partida de Taalt. Possui um ID único,
+ *  um nome, e uma lista de peças no tabuleiro das quais é dono.
+ */
 public class Player {
     PlayerID ID;
     String name;

@@ -18,6 +18,7 @@ public class GameStatus {
         this.gravityMode = options.getGravityMode();
         this.condition = GameCondition.START;
 
+        // TODO: Quando um sistema de inserção de nomes for adicionado, adicionar um mecanismo de captura de nomes aqui a partir de Options
         for (int playerID = 1; playerID <= totalPlayers; playerID++) {
             String[] names = new String[]{"Albert", "Berta", "Clyde", "Diane"};
             assert playerID <= 4;
