@@ -1,6 +1,6 @@
 package gameclient;
 
-import gameserver.Game;
+import gameserver.GameBuilder;
 import gameserver.IGame;
 import gameserver.Options;
 
@@ -14,11 +14,11 @@ import javax.swing.*;
  *  Recebe objetos Options de GUIMainMenu e os envia para GUIGameScreen.
  */
 public class GUIController extends JFrame implements IOptionsReceiver {
-    public final static int WIDTH = 500;
-    public final static int HEIGHT = 600;
+    public final static int WIDTH = 800;
+    public final static int HEIGHT = 1000;
     GUIMainMenu menuScreen;
     GUIGameScreen gameScreen;
-    Game gameServer;
+    IGame gameServer;
     Options options;
 
     public GUIController() throws InterruptedException {
@@ -50,7 +50,7 @@ public class GUIController extends JFrame implements IOptionsReceiver {
 
     // Comandos para iniciar e terminar o jogo.
     public void start() {
-        this.gameServer = new Game(this.options);
+        this.gameServer = GameBuilder.buildGame(this.options);
         this.gameScreen = new GUIGameScreen(WIDTH, HEIGHT, options.getM(), options.getN(), this);
 
         // Conecta o cliente ao servidor e, ademais, conecta as células do cliente às células dos servidor com sync().

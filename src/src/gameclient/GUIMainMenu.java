@@ -24,14 +24,18 @@ public class GUIMainMenu extends JPanel implements IOptionsProducer {
 
     public GUIMainMenu() {
         super();
+
         this.optionsReceiverList = new ArrayList<IOptionsReceiver>();
         this.options = new Options();
-        this.setLayout(new GridLayout(5, 1, 0, 50));
+        int inputCount = options.getInputCount();
+        this.setLayout(new GridLayout(inputCount + 2, 1, 0, 10));
         JLabel titleScreen = new JLabel(new ImageIcon("assets/titlescreen200x60.png"));
         this.add(titleScreen);
-        this.add(new InputPlayer(this));
-        this.add(new InputMNK(this));
-        this.add(new InputGravity(this));
+
+        for (int input = 0; input < inputCount; input++) {
+            this.add(new InputPanel(this, this.options.getInputID(input)));
+        }
+
         this.add(new StartButton(this));
     }
 
@@ -54,110 +58,36 @@ public class GUIMainMenu extends JPanel implements IOptionsProducer {
      *  selecionar um número de jogadores, "JComboBox.actionPerformed()" alterará
      *  o objeto Options armazenado na variável de instância "GUIMainMenu.options".
      */
-    class InputPlayer extends JPanel implements ActionListener {
-        GUIMainMenu outer;
+    class InputPanel extends JPanel implements ActionListener {
+        GUIMainMenu outerPanel;
+        JTextArea inputTextArea;
+        String inputID;
 
-        InputPlayer(GUIMainMenu outer) {
+        InputPanel(GUIMainMenu outerPanel, String inputID) {
             super();
-            this.outer = outer;
-            this.setLayout(new GridLayout(1, 2));
+            this.outerPanel = outerPanel;
+            this.inputID = inputID;
+            this.setLayout(new GridLayout(1, 3, 10, 0));
 
-            JLabel label= new JLabel("Choose the amount of players: ");
+            String displayText = this.outerPanel.options.getDisplayText(inputID);
+            JLabel label= new JLabel(displayText + ": ");
             this.add(label);
 
-            JComboBox<String> box = new JComboBox<>(new String[]{"2", "3", "4"});
-            box.addActionListener(this);
-            this.add(box);
+            this.inputTextArea = new JTextArea();
+            this.inputTextArea.setBorder(BorderFactory.createLineBorder(Color.black));
+            this.inputTextArea.setBackground(new Color(220, 220, 200));
+            this.add(inputTextArea);
+
+            JButton applyButton = new JButton("Apply");
+            applyButton.addActionListener(this);
+            this.add(applyButton);
         }
 
-        // TODO: Se livrar desse problema de unchecked casting.
-        /** Implementa método de JComboBox. */
+        /** Implementa método de JButton. */
         @Override
         public void actionPerformed(ActionEvent e) {
-            @SuppressWarnings("unchecked")
-            JComboBox<String> box = (JComboBox<String>) e.getSource();
-            String selectedItem = (String) box.getSelectedItem();
-            assert selectedItem != null;
-            int numPlayers = Integer.parseInt(selectedItem);
-            options.setNumPlayers(numPlayers);
-        }
-    }
-
-    /**
-     *  Componente Swing contendo três JSliders para escolher os parâmetros m, n, k do jogo.
-     *  Toda vez que o usuário altera a posição do cabeçote de um JSlider, "JSlider.stateChanged()"
-     *  alterará o objeto Options armazenado na variável de instância "GUIMainMenu.options".
-     */
-    private class InputMNK extends JPanel implements ChangeListener {
-        GUIMainMenu outer;
-        JLabel label;
-        JSlider mSlider, nSlider, kSlider;
-
-        InputMNK(GUIMainMenu outer) {
-            super();
-            this.outer = outer;
-            this.setLayout(new GridLayout(4, 1));
-
-            this.mSlider = new JSlider(3, 10, 3);
-            this.nSlider = new JSlider(3, 10, 3);
-            this.kSlider = new JSlider(3, 10, 3);
-
-            ArrayList<JSlider> sliderList = new ArrayList<JSlider>();
-            sliderList.add(this.mSlider);
-            sliderList.add(this.nSlider);
-            sliderList.add(this.kSlider);
-            for (JSlider slider: sliderList) {
-                slider.setPaintTicks(true);
-                slider.setMinorTickSpacing(10);
-                slider.setPaintTrack(true);
-                slider.setPaintLabels(true);
-                slider.addChangeListener(this);
-                this.add(slider);
-            }
-
-            this.label = new JLabel("Values for m, n, k: " + mSlider.getValue() + ", " + nSlider.getValue() + ", " + kSlider.getValue());
-            this.add(label);
-        }
-
-        /** Implementa método de JSlider. */
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            this.label.setText("Values for m, n, k: " + mSlider.getValue() + ", " + nSlider.getValue() + ", " + kSlider.getValue());
-            Options outerOptions = this.outer.options;
-            if (e.getSource() == mSlider) {
-                outerOptions.setM(mSlider.getValue());
-            } else if (e.getSource() == nSlider) {
-                outerOptions.setN(nSlider.getValue());
-            } else {
-                outerOptions.setK(kSlider.getValue());
-            }
-        }
-    }
-
-    /**
-     *  Componente Swing contendo um JTtogleButton para ativar ou desativar o modo gravidade.
-     *  Toda vez que o usuário altera o toggle, "JToggleButton.itemStateChanged()" alterará
-     *  o objeto Options armazenado na variável de instância "GUIMainMenu.options".
-     */
-    private class InputGravity extends JPanel implements ItemListener {
-        GUIMainMenu outer;
-
-        InputGravity(GUIMainMenu outer) {
-            super();
-            this.outer = outer;
-            this.setLayout(new GridLayout(1, 2));
-            JLabel label = new JLabel("Gravity mode: ");
-            JToggleButton toggle = new JToggleButton();
-            toggle.addItemListener(this);
-            this.add(label);
-            this.add(toggle);
-        }
-
-        /** Implementa método de JSlider. */
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-            boolean gravityMode = (e.getStateChange() == ItemEvent.SELECTED);
-            options.setGravityMode(gravityMode);
+            String inputText = inputTextArea.getText();
+            options.setOption(this.inputID, inputText);
         }
     }
 
