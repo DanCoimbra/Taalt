@@ -37,17 +37,20 @@ public class GUIController extends JFrame implements IClient {
         this.setIconImage(logoIcon.getImage());
 
         // Inicializa o menu principal e a janela do jogo.
-        this.menuScreen = new GUIMainMenu(this);
         this.gameScreen = new GUIGameScreen(this);
+        this.gameScreen.setVisible(false);
+        this.getContentPane().add(gameScreen);
+
+        this.menuScreen = new GUIMainMenu(this);
+        this.getContentPane().add(menuScreen);
         this.setVisible(true);
     }
 
     @Override
     public void showMainMenu() {
         try {
-            this.getContentPane().remove(this.gameScreen);
-            this.getContentPane().add(this.menuScreen);
             this.menuScreen.setVisible(true);
+            this.gameScreen.setVisible(false);
             this.revalidate();
         } catch (NullPointerException e) {
             // Deu problema ao remover o gameScreen ou ao adicionar menuScreen
@@ -58,8 +61,7 @@ public class GUIController extends JFrame implements IClient {
     @Override
     public void showGameScreen() {
         try {
-            this.getContentPane().remove(this.menuScreen);
-            this.getContentPane().add(this.gameScreen);
+            this.menuScreen.setVisible(false);
             this.gameScreen.setVisible(true);
             this.revalidate();
         } catch (NullPointerException e) {
@@ -73,6 +75,7 @@ public class GUIController extends JFrame implements IClient {
         this.gameScreen.setupGame(gameServer);      // Inicializa o tabuleiro do visualizador
         gameServer.addGameViewer(this.gameScreen);  // Conecta o cliente ao servidor
     }
+
 
     Dimension getWindowDimensions() {
         return windowDimensions;

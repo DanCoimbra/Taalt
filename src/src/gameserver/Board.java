@@ -14,9 +14,10 @@ public class Board {
     GravityMode gravityMode;
     Cell[][] matrix;
 
-    Board(Game game, int successiveCellsToWin, Dimension dimension) {
+    Board(Game game, int successiveCellsToWin, GravityMode gravityMode, Dimension dimension) {
         this.game = game;
         this.successiveCellsToWin = successiveCellsToWin;
+        this.gravityMode = gravityMode;
         this.rows = (int) dimension.getWidth();
         this.cols = (int) dimension.getHeight();
         this.matrix = new Cell[this.rows][this.cols];
@@ -104,10 +105,10 @@ public class Board {
     public int[] getFallDirection() {
         return switch (this.gravityMode) {
             case DISABLED -> new int[]{0, 0};
-            case UP -> new int[]{+1, 0};
-            case DOWN -> new int[]{-1, 0};
-            case LEFT -> new int[]{0, +1};
-            case RIGHT -> new int[]{0, -1};
+            case UP -> new int[]{-1, 0};
+            case DOWN -> new int[]{+1, 0};
+            case LEFT -> new int[]{0, -1};
+            case RIGHT -> new int[]{0, +1};
         };
     }
 
@@ -171,33 +172,36 @@ public class Board {
     }
 
     public boolean winningPosition(Point pos) {
-        Player player = this.getCell(pos).getPiece().getPlayer();
+        Piece piece = this.getCell(pos).getPiece();
+        if (piece != null) {
+            Player player = piece.getPlayer();
 
-        int rowSelected = pos.x;
-        int colSelected = pos.y;
-        int rowParse, colParse;
-        int consecutive;
-        Cell cellParse;
-        int[][] directions = new int[][]{{ 0, -1}, { 0, +1},
-                                         {-1,  0}, {+1,  0},
-                                         {+1, +1}, {-1, -1},
-                                         {+1, -1}, {-1, +1}};
+            int rowSelected = pos.x;
+            int colSelected = pos.y;
+            int rowParse, colParse;
+            int consecutive;
+            Cell cellParse;
+            int[][] directions = new int[][]{{0, -1}, {0, +1},
+                    {-1, 0}, {+1, 0},
+                    {+1, +1}, {-1, -1},
+                    {+1, -1}, {-1, +1}};
 
-        for (int[] direction : directions) {
-            rowParse = rowSelected;
-            colParse = colSelected;
-            consecutive = 0;
-            while(this.insideBoard(new Point(rowParse, colParse))) {
-                cellParse = this.matrix[rowParse][colParse];
-                if (cellParse.getContent() == player.getID()) {
-                    consecutive++;
-                    rowParse += direction[0];
-                    colParse += direction[1];
-                    if (consecutive >= this.successiveCellsToWin) {
-                        return true;
+            for (int[] direction : directions) {
+                rowParse = rowSelected;
+                colParse = colSelected;
+                consecutive = 0;
+                while (this.insideBoard(new Point(rowParse, colParse))) {
+                    cellParse = this.matrix[rowParse][colParse];
+                    if (cellParse.getContent() == player.getID()) {
+                        consecutive++;
+                        rowParse += direction[0];
+                        colParse += direction[1];
+                        if (consecutive >= this.successiveCellsToWin) {
+                            return true;
+                        }
+                    } else {
+                        break;
                     }
-                } else {
-                    break;
                 }
             }
         }

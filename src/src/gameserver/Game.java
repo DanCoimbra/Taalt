@@ -29,7 +29,7 @@ public class Game implements IGame {
         this.status = new GameStatus(options);
 
         Dimension boardDimension = new Dimension(options.getM(), options.getN());
-        this.board = new Board(this, options.getK(), boardDimension);
+        this.board = new Board(this, options.getK(), options.getGravityMode(), boardDimension);
     }
 
     /**
@@ -66,7 +66,7 @@ public class Game implements IGame {
         }
 
         for (IUpdateGameView gameView: this.gameViewerList) {
-            gameView.updateGameStatus();
+           gameView.updateGameStatus();
         }
     }
 

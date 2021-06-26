@@ -115,7 +115,8 @@ public class Options {
 
     public String getPlayerName(int ID) {
         int index = ID - 1;
-        return this.nameList.get(index);
+        //return this.nameList.get(index);
+        return "Ana";
     }
 
     public int getM() {

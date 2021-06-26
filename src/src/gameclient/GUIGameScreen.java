@@ -48,7 +48,7 @@ public class GUIGameScreen extends JPanel implements IGameScreen {
         Output initialState = this.gameServer.getUpdate();
 
         this.board = new GUIBoard(this.panelDimensions.width, this.panelDimensions.height, this);
-        this.board.fillBoard();
+        this.board.fillBoard(initialState.getM(), initialState.getN());
         this.add(board, BorderLayout.CENTER);
 
         this.status.update(initialState);

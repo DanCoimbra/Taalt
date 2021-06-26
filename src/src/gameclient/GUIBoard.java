@@ -22,17 +22,17 @@ public class GUIBoard extends JPanel {
 
     public GUIBoard(int width, int height, GUIGameScreen gameScreen) {
         super();
-        this.rows = height;
-        this.cols = width;
-        this.matrix = new GUICell[rows][cols];
         this.gameScreen = gameScreen;
         this.setPreferredSize(new Dimension(width, height));
         this.setBackground(Color.BLACK);
         this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        this.setLayout(new GridLayout(rows, cols, CELL_GAP, CELL_GAP));
     }
 
-    public void fillBoard() {
+    public void fillBoard(int rows, int cols) {
+        this.rows = rows;
+        this.cols = cols;
+        this.matrix = new GUICell[rows][cols];
+        this.setLayout(new GridLayout(rows, cols, CELL_GAP, CELL_GAP));
         GUICell guiCell;
         for (int row = 0; row < this.rows; row++) {
             for (int col = 0; col < this.cols; col++) {
