@@ -1,75 +1,64 @@
 package gameclient;
 
-import gameserver.Options;
+import gameserver.*;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  *  Interface gráfica para inserir as opções de jogo e inicializá-lo.
- *
- *  Contém quatro componentes que herdam de JPanel, cada um responsável por coletar um tipo de opção de jogo.
- *  Os componentes são definidos como inner classes. Por implementarem IOptionsProducer, armazena referência
- *  a implementadores de IOptionsReceiver e os envia objetos Option quando "fireOptions()" é chamada.
  */
+public class GUIMainMenu extends JScrollPane implements IMainMenu {
+    private final GUIController controller;
+    private final Options options;      // Uma vez criado o objeto, ele não muda, só os atributos dele.
 
-public class GUIMainMenu extends JPanel implements IOptionsProducer {
-    ArrayList<IOptionsReceiver> optionsReceiverList;
-    Options options;
-    JButton start;
+    private final String titleScreenLogo = "assets/titlescreen200x60.png";
 
-    public GUIMainMenu() {
+    public GUIMainMenu(GUIController controller) {
         super();
-
-        this.optionsReceiverList = new ArrayList<IOptionsReceiver>();
+        this.controller = controller;
         this.options = new Options();
-        int inputCount = options.getInputCount();
-        this.setLayout(new GridLayout(inputCount + 2, 1, 0, 10));
-        JLabel titleScreen = new JLabel(new ImageIcon("assets/titlescreen200x60.png"));
-        this.add(titleScreen);
 
-        for (int input = 0; input < inputCount; input++) {
-            this.add(new InputPanel(this, this.options.getInputID(input)));
+        /* Cria a interface do menu que ficará dentro do JScrollPane */
+        JPanel innerScreen = new JPanel();
+        JLabel titleScreen = new JLabel(new ImageIcon(titleScreenLogo));
+        innerScreen.add(titleScreen);
+
+        int inputCount = options.getNumberOfOptions();
+        innerScreen.setLayout(new GridLayout(inputCount + 2, 1, 0, 10));
+
+        for (int i = 0; i < inputCount; i++) {
+            innerScreen.add(new InputPanel(this.options.getInputID(i)));
         }
 
-        this.add(new StartButton(this));
+        innerScreen.add(new StartButton());
+
+        /* Adiciona tal interface ao JScrollPane */
+        this.getViewport().setView(innerScreen);
     }
 
-    /** Implementa métodos de IOptionsProducer. */
-    @Override
-    public void addOptionsReceiver(IOptionsReceiver optionsReceiver) {
-        this.optionsReceiverList.add(optionsReceiver);
-    }
-
-    @Override
-    public void fireOptions(Options options) {
-        for (IOptionsReceiver optionsReceiver : this.optionsReceiverList) {
-            optionsReceiver.receiveOptions(options);
-        }
+    private void createNewGame() {
+        IGameBuilder gameBuilder = new GameBuilder();
+        IGame gameServer = gameBuilder.buildGame(this.options);
+        this.controller.setupGameScreen(gameServer);
+        this.controller.showGameScreen();
     }
 
     /**
-     *  Componente Swing contendo um JComboBox para escolher o número de jogadores
-     *  da partida, dentre alternativas pré-determinadas. Toda vez que o usuário
-     *  selecionar um número de jogadores, "JComboBox.actionPerformed()" alterará
-     *  o objeto Options armazenado na variável de instância "GUIMainMenu.options".
+     *  Painel onde serão inseridas informações dos parâmetros do jogo, que serão aplicadas ao clicar no botão
+     *  correspondente a cada campo.
      */
     class InputPanel extends JPanel implements ActionListener {
-        GUIMainMenu outerPanel;
         JTextArea inputTextArea;
         String inputID;
 
-        InputPanel(GUIMainMenu outerPanel, String inputID) {
+        InputPanel(String inputID) {
             super();
-            this.outerPanel = outerPanel;
             this.inputID = inputID;
             this.setLayout(new GridLayout(1, 3, 10, 0));
 
-            String displayText = this.outerPanel.options.getDisplayText(inputID);
+            String displayText = GUIMainMenu.this.options.getDisplayText(inputID);
             JLabel label= new JLabel(displayText + ": ");
             this.add(label);
 
@@ -93,16 +82,12 @@ public class GUIMainMenu extends JPanel implements IOptionsProducer {
 
     /**
      *  Componente Swing contendo um JButton para iniciar o jogo. Quando o usuário clica o botão,
-     *  o método sobrescrito "JButton.actionPerformed()" chamará o método "GUIMainMenu.fireOptions()".
+     *  o método sobrescrito "JButton.actionPerformed()" chamará o método "GUIMainMenu.start()".
      */
     private class StartButton extends JPanel implements ActionListener {
-        GUIMainMenu outer;
-        JButton button;
-
-        StartButton(GUIMainMenu outer) {
+        StartButton() {
             super();
-            this.outer = outer;
-            this.button = new JButton("Start");
+            JButton button = new JButton("Start");
             button.addActionListener(this);
             this.add(button);
         }
@@ -110,8 +95,7 @@ public class GUIMainMenu extends JPanel implements IOptionsProducer {
         /** Implementa método de JButton. */
         @Override
         public void actionPerformed(ActionEvent e) {
-            this.outer.fireOptions(options);
+            GUIMainMenu.this.createNewGame();
         }
     }
-
 }

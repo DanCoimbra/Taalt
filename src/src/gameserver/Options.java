@@ -8,56 +8,57 @@ import java.util.ArrayList;
  *  requerida para vitória (k), e se o modo gravidade está ativado.
  */
 public class Options {
-    String[] inputs;
-    int inputCount;
+    String[] inputFields;
     int numPlayers;
-    ArrayList<String> names;
+    ArrayList<String> nameList;
     int m;
     int n;
     int k;
-    boolean gravityMode;
+    GravityMode gravityMode;
 
     public Options() {
-        this.inputs = new String[]{"numplayers", "names", "m", "n", "k", "gravity"};
+        this.inputFields = new String[]{"numPlayers", "nameList", "m", "n", "k", "gravityMode"};
         this.numPlayers = 2;
-        this.names = new ArrayList<String>();
+        this.nameList = new ArrayList<String>();
         this.m = 3;
         this.n = 3;
         this.k = 3;
-        this.gravityMode = false;
+        this.gravityMode = GravityMode.DISABLED;
     }
 
-    public int getInputCount() {
-        return this.inputs.length;
+    /** Métodos que permitem ao cliente construir um menu de configurações */
+    public int getNumberOfOptions() {
+        return this.inputFields.length;
     }
 
     public String getInputID(int index) {
-        return this.inputs[index];
+        return this.inputFields[index];
     }
 
     public String getDisplayText(String inputID) {
         return switch (inputID) {
-            case "numplayers" -> "Number of players";
-            case "names" -> "Player names (comma-separated)";
+            case "numPlayers" -> "Number of players";
+            case "nameList" -> "Player names (comma-separated)";
             case "m" -> "Rows (m)";
             case "n" -> "Columns (n)";
             case "k" -> "Sequence size (k)";
-            case "gravity" -> "Gravity mode (true/false)";
+            case "gravityMode" -> "Gravity mode (up/down/left/right/off)";
             default -> "ERROR";
         };
     }
 
     public void setOption(String inputID, String inputText) {
         switch (inputID) {
-            case "numplayers" -> this.setNumPlayers(inputText);
-            case "names" -> this.setPlayerNames(inputText);
+            case "numPlayers" -> this.setNumPlayers(inputText);
+            case "nameList" -> this.setPlayerNames(inputText);
             case "m" -> this.setM(inputText);
             case "n" -> this.setN(inputText);
             case "k" -> this.setK(inputText);
-            case "gravity" -> this.setGravityMode(inputText);
-        };
+            case "gravityMode" -> this.setGravityMode(inputText);
+        }
     }
 
+    /** Setters e getters das configurações */
     public void setNumPlayers(String inputText) {
         int numPlayers = Integer.parseInt(inputText);
         if (2 <= numPlayers && numPlayers <= 4) {
@@ -73,7 +74,7 @@ public class Options {
     }
 
     public void addPlayerName(String name) {
-        this.names.add(name);
+        this.nameList.add(name);
     }
 
     public void setM(String inputText) {
@@ -99,10 +100,12 @@ public class Options {
 
     public void setGravityMode(String inputText) {
         inputText = inputText.toLowerCase();
-        if (inputText.equals("t") || inputText.equals("true")) {
-            this.gravityMode = true;
-        } else if (inputText.equals("f") || inputText.equals("false")) {
-            this.gravityMode = false;
+        switch (inputText) {
+            case "u", "up" -> this.gravityMode = GravityMode.UP;
+            case "d", "down" -> this.gravityMode = GravityMode.DOWN;
+            case "l", "left" -> this.gravityMode = GravityMode.LEFT;
+            case "r", "right" -> this.gravityMode = GravityMode.RIGHT;
+            case "o", "off" -> this.gravityMode = GravityMode.DISABLED;
         }
     }
 
@@ -110,8 +113,9 @@ public class Options {
         return this.numPlayers;
     }
 
-    public String getPlayerName(int index) {
-        return this.names.get(index);
+    public String getPlayerName(int ID) {
+        int index = ID - 1;
+        return this.nameList.get(index);
     }
 
     public int getM() {
@@ -126,7 +130,7 @@ public class Options {
         return this.k;
     }
 
-    public boolean getGravityMode() {
+    public GravityMode getGravityMode() {
         return this.gravityMode;
     }
 }

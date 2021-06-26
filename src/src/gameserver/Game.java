@@ -1,7 +1,11 @@
 package gameserver;
 
+import gameclient.IUpdateGameView;
+
 import java.awt.*;
 import java.util.ArrayList;
+
+// TODO: Implementar função buildGame, que basicamente inicializa a partida com os parâmetros e constrói o tabuleiro.
 
 /**
  *  Servidor de uma partida de Taalt. Cria um objeto Board, correspondente ao tabuleiro do jogo,
@@ -13,66 +17,78 @@ import java.util.ArrayList;
  *  tabuleiro (via IContentProducerViewer).
  */
 public class Game implements IGame {
-    ArrayList<IOutputReceiver> outputReceiverList;
+    ArrayList<IUpdateGameView> gameViewerList;
     GameStatus status;
     Board board;
 
-    public Game(Options options) {
-        this.outputReceiverList = new ArrayList<IOutputReceiver>();
+    public Game() {
+    }
+
+    public void setGameOptions(Options options) {
+        this.gameViewerList = new ArrayList<IUpdateGameView>();
         this.status = new GameStatus(options);
 
         Dimension boardDimension = new Dimension(options.getM(), options.getN());
-        this.board = new Board(options.getK(), boardDimension);
-    }
-
-    /** Implementa métodos de IContentProducerViewer. */
-    @Override
-    public IContentProducer getContentProducer(Point pos) {
-        return this.board.getContentProducer(pos);
+        this.board = new Board(this, options.getK(), boardDimension);
     }
 
     /**
-     *  Implementa métodos de IInputReceiver.
      *  Receber uma tentativa de jogada: um objeto Input, que apenas informa uma posição do tabuleiro.
      *  Preenche o tabuleiro, e ou passa de turno ou termina o jogo.
      *  Por fim, emite um Output para quaisquer OutputReceivers listados.
      */
     @Override
-    public void receiveInput(Input input) {
-        Point pos = input.getInput();
+    public void placePiece(Point pos) {
         Player currentPlayer = this.status.getCurrentPlayer();
-        this.board.fillCell(pos, currentPlayer);
-        boolean end = this.board.hasWon(pos, currentPlayer);
-        if (end) {
-           this.status.endGame();
-        } else {
+        boolean successfulMove = this.board.fillCell(pos, currentPlayer);
+        if (successfulMove) {
+            Point posFallen = this.board.fallPiece(pos);
+            this.cellUpdate(pos);
+            if (posFallen == null) {
+                this.cellUpdate(pos);
+            } else {
+                this.cellUpdate(posFallen);
+            }
             this.status.nextRound();
+            this.gameUpdate();
         }
-        this.fireOutput();
     }
 
-    /** Implementa métodos de IOutputProducer. */
-    @Override
-    public void addOutputReceiver(IOutputReceiver listener) {
-        this.outputReceiverList.add(listener);
+    public void cellUpdate(Point pos) {
+        for (IUpdateGameView gameView: this.gameViewerList) {
+            gameView.updateCell(pos);
+        }
+    }
+
+    public void gameUpdate() {
+        if (this.board.hasWon()) {
+            this.status.endGame();
+        }
+
+        for (IUpdateGameView gameView: this.gameViewerList) {
+            gameView.updateGameStatus();
+        }
     }
 
     @Override
-    public void clearOutputReceiverList() {
-        this.outputReceiverList = new ArrayList<IOutputReceiver>();
+    public void setGravityMode(GravityMode gravityMode) {
+        this.status.setGravityMode(gravityMode);
+        this.board.setGravityMode(gravityMode);
     }
 
-    /** Método de IOutputProducer. Emite um Output para quaisquer OutputReeivers listados.
-     *  Se o jogo houver terminado, limpa a lista de OutputReceivers.
-     */
     @Override
-    public void fireOutput() {
-        Output output = this.status.getOutput();
-        for (IOutputReceiver listener: this.outputReceiverList) {
-            listener.receiveOutput(output);
-        }
-        if (output.getGameCondition() == GameCondition.END) {
-            this.clearOutputReceiverList();
-        }
+    public void addGameViewer(IUpdateGameView gameViewer) {
+        this.gameViewerList.add(gameViewer);
+    }
+
+    @Override
+    public Output getUpdate() {
+        return this.status.getOutput();
+    }
+
+    /** Método de IGameView. Permite que agentes externos observem o conteúdo de uma célula. */
+    @Override
+    public int getCellContent(Point pos) {
+        return this.board.getCellContent(pos);
     }
 }

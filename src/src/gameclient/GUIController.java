@@ -1,75 +1,80 @@
 package gameclient;
 
-import gameserver.GameBuilder;
 import gameserver.IGame;
-import gameserver.Options;
 
 import java.awt.*;
 import javax.swing.*;
 
 // TODO: Consider using JFrame.pack() method to dynamically adjust screen size.
-/**
- *  Janela principal e controlador principal da interface gráfica. Alterna entre componentes
- *  correspondentes ao menu principal (GUIMainMenu) e à visualização do jogo (GUIGameScreen).
- *  Recebe objetos Options de GUIMainMenu e os envia para GUIGameScreen.
- */
-public class GUIController extends JFrame implements IOptionsReceiver {
-    public final static int WIDTH = 800;
-    public final static int HEIGHT = 1000;
-    GUIMainMenu menuScreen;
-    GUIGameScreen gameScreen;
-    IGame gameServer;
-    Options options;
 
-    public GUIController() throws InterruptedException {
-        // Inicializa a janela.
-        this.setTitle("Taalt! – The Game");
+/**
+ *  Janela principal e gerenciador da interface gráfica. Alterna entre componentes correspondentes ao menu principal
+ *  (GUIMainMenu) e à visualização do jogo (GUIGameScreen). Também recebe um  componente IGame de GUIMainMenu e o envia
+ *  para GUIGameScreen, que será responsável por visualizar e controlar a partida.
+ */
+public class GUIController extends JFrame implements IClient {
+    // Janelas secundárias (Menu e Janela do Jogo)
+    private GUIMainMenu menuScreen;     // JScrollPane que contém uma lista de botões, nos quais se pode inserir opções e iniciar o jogo.
+    private GUIGameScreen gameScreen;   // JPanel que mostra a visualização de um jogo.
+
+    // Dimensões da janela principal
+    private final Dimension windowDimensions = new Dimension(600, 600);
+
+    private final String gameTitle = "Taalt! – The Game";
+    private final String logoIconPath = "assets/logo32x32.png";
+
+    public GUIController() {
+
+        // Inicializa a janela principal (o próprio GUIController).
+        this.setTitle(gameTitle);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.getContentPane().setLayout(new BorderLayout());
-        this.setSize(new Dimension(WIDTH, HEIGHT));
+        this.setSize(windowDimensions);
         this.setResizable(false);
 
-        // Adiciona um ícone (favicon) à janela.
-        ImageIcon logoIcon = new ImageIcon("assets/logo32x32.png");
+        // Adiciona um ícone ao título da janela.
+        ImageIcon logoIcon = new ImageIcon(logoIconPath);
         this.setIconImage(logoIcon.getImage());
 
-        // Inicializa o menu principal, pelo qual o jogador pode inserir opções e iniciar o jogo.
-        this.menuScreen = new GUIMainMenu();
-        this.menuScreen.addOptionsReceiver(this);
-        this.getContentPane().add(this.menuScreen);
-
+        // Inicializa o menu principal e a janela do jogo.
+        this.menuScreen = new GUIMainMenu(this);
+        this.gameScreen = new GUIGameScreen(this);
         this.setVisible(true);
     }
 
-    // Implementa método de IOptionsReceiver.
     @Override
-    public void receiveOptions(Options options) {
-        this.options = options;
-        this.start();
+    public void showMainMenu() {
+        try {
+            this.getContentPane().remove(this.gameScreen);
+            this.getContentPane().add(this.menuScreen);
+            this.menuScreen.setVisible(true);
+            this.revalidate();
+        } catch (NullPointerException e) {
+            // Deu problema ao remover o gameScreen ou ao adicionar menuScreen
+            System.err.println(e.getMessage());
+        }
     }
 
-    // Comandos para iniciar e terminar o jogo.
-    public void start() {
-        this.gameServer = GameBuilder.buildGame(this.options);
-        this.gameScreen = new GUIGameScreen(WIDTH, HEIGHT, options.getM(), options.getN(), this);
-
-        // Conecta o cliente ao servidor e, ademais, conecta as células do cliente às células dos servidor com sync().
-        this.gameServer.addOutputReceiver(this.gameScreen);
-        this.gameScreen.addInputReceiver(this.gameServer);
-        this.gameScreen.sync(gameServer);
-
-        // Devolve o estado inicial do jogo, antes de qualquer input de jogador.
-        this.gameServer.fireOutput();
-
-        this.menuScreen.setVisible(false);
-        this.getContentPane().add(this.gameScreen);
+    @Override
+    public void showGameScreen() {
+        try {
+            this.getContentPane().remove(this.menuScreen);
+            this.getContentPane().add(this.gameScreen);
+            this.gameScreen.setVisible(true);
+            this.revalidate();
+        } catch (NullPointerException e) {
+            // Deu problema ao remover o menuScreen ou ao adicionar gameScreen
+            System.err.println(e.getMessage());
+        }
     }
 
-    public void end() {
-        this.getContentPane().remove(this.gameScreen);
-        this.gameScreen = null;
-        this.gameServer = null;
-        this.menuScreen.setVisible(true);
+    @Override
+    public void setupGameScreen(IGame gameServer) {
+        this.gameScreen.setupGame(gameServer);      // Inicializa o tabuleiro do visualizador
+        gameServer.addGameViewer(this.gameScreen);  // Conecta o cliente ao servidor
+    }
+
+    Dimension getWindowDimensions() {
+        return windowDimensions;
     }
 }
-

@@ -1,5 +1,7 @@
 package gameserver;
 
-/** Interface acumuladora que o cliente usará para interagir com o servidor. */
-public interface IGame extends IInputReceiver, IOutputProducer, IContentProducerViewer {
+/**
+ * Agrega todas as interfaces oferecidas pelo servidor do jogo.
+ */
+public interface IGame extends IGameAction, IGameView, IGameBuild {
 }

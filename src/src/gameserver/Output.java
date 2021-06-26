@@ -9,15 +9,21 @@ public class Output {
     int numPlayers;
     int rounds;
     String currentName;
-    boolean gravityMode;
+    GravityMode gravityMode;
     GameCondition gameCondition;
+    int m;
+    int n;
+    int k;
 
-    public Output(int numPlayers, int rounds, String currentName, boolean gravityMode, GameCondition gameCondition) {
+    public Output(int numPlayers, int rounds, String currentName, GravityMode gravityMode, GameCondition gameCondition, int m, int n, int k) {
         this.numPlayers = numPlayers;
         this.rounds = rounds;
         this.currentName = currentName;
         this.gravityMode = gravityMode;
         this.gameCondition = gameCondition;
+        this.m = m;
+        this.n = n;
+        this.k = k;
     }
 
     public int getNumPlayers() {
@@ -32,11 +38,23 @@ public class Output {
         return this.currentName;
     }
 
-    public boolean getGravityMode() {
+    public GravityMode getGravityMode() {
         return this.gravityMode;
     }
 
     public GameCondition getGameCondition() {
         return this.gameCondition;
+    }
+
+    public int getM() {
+        return this.m;
+    }
+
+    public int getN() {
+        return this.n;
+    }
+
+    public int getK() {
+        return this.k;
     }
 }

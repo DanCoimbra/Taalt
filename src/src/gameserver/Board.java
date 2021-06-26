@@ -7,12 +7,15 @@ import java.awt.*;
  *  no construtor. Armazena a quantidade de peças consecutivas requeridas para vitória, e com essa
  *  informação a função "Board.hasWon()" detecta se um jogador ganhou.
  */
-public class Board implements IContentProducerViewer {
+public class Board {
+    Game game;
     int successiveCellsToWin;
     int rows, cols;
+    GravityMode gravityMode;
     Cell[][] matrix;
 
-    Board(int successiveCellsToWin, Dimension dimension) {
+    Board(Game game, int successiveCellsToWin, Dimension dimension) {
+        this.game = game;
         this.successiveCellsToWin = successiveCellsToWin;
         this.rows = (int) dimension.getWidth();
         this.cols = (int) dimension.getHeight();
@@ -24,10 +27,10 @@ public class Board implements IContentProducerViewer {
         }
     }
 
-    /** Implementa o método único de IContentProducerViewer. */
-    @Override
-    public IContentProducer getContentProducer(Point pos) {
-        return this.getCell(pos);
+    public int getCellContent(Point pos) {
+        Cell cell = this.getCell(pos);
+        assert cell != null;
+        return cell.getContent();
     }
 
     public Cell getCell(Point pos) {
@@ -51,18 +54,101 @@ public class Board implements IContentProducerViewer {
     }
 
     /**
-     *  Dada uma posição válida, cria um objeto Cell e atribui-lhe um
-     *  objeto Piece, que por sua vez é atribuída a um objeto Player.
+     *  Dada uma posição válida, calcula qual posição poderia ser preenchida dada o estado atual do
+     *  modo gravidade (possivelmente DISABLED) e, caso haja tal posição, altera a célula  ali contida.
+     *  Termina por avisar o controlador de jogo (Game) de que houve alteração naquela posição.
      */
-    public void fillCell(Point pos, Player player) {
-        Cell cell = this.getCell(pos);
-        assert cell != null;
-        if (cell.isEmpty()) {
+    public boolean fillCell(Point pos, Player player) {
+        if (this.insideBoard(pos) && this.isEmpty(pos)) {
+            Cell cell = this.getCell(pos);
+            assert cell != null;
+
             Piece piece = new Piece(player);
             player.addPiece(piece);
             cell.setPiece(piece);
+
+            return true;
         }
+        return false;
     }
+
+    /** Dada uma posição válida, calcula qual posição poderia ser preenchida dada o estado atual do modo gravidade. */
+    public Point fallPiece(Point pos) {
+        if (this.gravityMode != GravityMode.DISABLED) {
+            int[] fallDirection = this.getFallDirection();
+            Point parsePos = new Point(pos.x, pos.y);
+            Point lastEmptyPos = new Point(pos.x, pos.y);
+            while (true) {
+                parsePos.x += fallDirection[0];
+                parsePos.y += fallDirection[1];
+                if (this.insideBoard(parsePos) && this.isEmpty(parsePos)) {
+                    lastEmptyPos.x = parsePos.x;
+                    lastEmptyPos.y = parsePos.y;
+                } else {
+                    break;
+                }
+            }
+
+            Cell prevCell = this.getCell(pos);
+            Piece piece = prevCell.getPiece();
+            prevCell.removePiece();
+
+            Cell newCell = this.getCell(lastEmptyPos);
+            newCell.setPiece(piece);
+
+            return lastEmptyPos;
+        }
+        return null;
+    }
+
+    public int[] getFallDirection() {
+        return switch (this.gravityMode) {
+            case DISABLED -> new int[]{0, 0};
+            case UP -> new int[]{+1, 0};
+            case DOWN -> new int[]{-1, 0};
+            case LEFT -> new int[]{0, +1};
+            case RIGHT -> new int[]{0, -1};
+        };
+    }
+
+    public void fallBoard() {
+        if (this.gravityMode != GravityMode.DISABLED) {
+            int rowStart = 0;
+            int colStart = 0;
+            int rowStep = 1;
+            int colStep = 1;
+            int rowEnd = this.rows - 1;
+            int colEnd = this.cols - 1;
+            switch (gravityMode) {
+                case DOWN -> {
+                    rowStart = this.rows - 1;
+                    rowStep = -1;
+                    rowEnd = 0;
+                }
+                case RIGHT -> {
+                    colStart = this.cols - 1;
+                    colStep = -1;
+                    colEnd = 0;
+                }
+            }
+
+            for (int row = rowStart; row <= rowEnd; row += rowStep) {
+                for (int col = colStart; col <= colEnd; col += colStep) {
+                    Point pos = new Point(row, col);
+                    Cell cell = this.getCell(pos);
+                    if (cell != null) {
+                        Point posFallen = fallPiece(pos);
+                        if (posFallen != null) {
+                            this.game.cellUpdate(pos);
+                            this.game.cellUpdate(posFallen);
+                        }
+                    }
+                }
+            }
+        }
+        this.game.gameUpdate();
+    }
+
 
     /**
      *  Determina se um jogador venceu. Para tornar tal determinação mais eficiente,
@@ -71,23 +157,39 @@ public class Board implements IContentProducerViewer {
      *  parâmetro. O uso correto da função requer informar-lhe a posição e o jogador
      *  correspondente à última jogada que foi feita.
      */
-    public boolean hasWon(Point pos, Player player) {
+    public boolean hasWon() {
+        for (int row = 0; row < this.rows; row++) {
+            for (int col = 0; col < this.cols; col++) {
+                Point pos = new Point(row, col);
+                if (this.winningPosition(pos)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public boolean winningPosition(Point pos) {
+        Player player = this.getCell(pos).getPiece().getPlayer();
+
         int rowSelected = pos.x;
         int colSelected = pos.y;
-        Cell cellParse;
         int rowParse, colParse;
         int consecutive;
+        Cell cellParse;
         int[][] directions = new int[][]{{ 0, -1}, { 0, +1},
                                          {-1,  0}, {+1,  0},
                                          {+1, +1}, {-1, -1},
                                          {+1, -1}, {-1, +1}};
+
         for (int[] direction : directions) {
             rowParse = rowSelected;
             colParse = colSelected;
             consecutive = 0;
             while(this.insideBoard(new Point(rowParse, colParse))) {
                 cellParse = this.matrix[rowParse][colParse];
-                if (cellParse.sendContent() == player.getID().ordinal()) {
+                if (cellParse.getContent() == player.getID()) {
                     consecutive++;
                     rowParse += direction[0];
                     colParse += direction[1];
@@ -100,6 +202,11 @@ public class Board implements IContentProducerViewer {
             }
         }
         return false;
+    }
+
+    public void setGravityMode(GravityMode gravityMode) {
+        this.gravityMode = gravityMode;
+        this.fallBoard();
     }
 
 }

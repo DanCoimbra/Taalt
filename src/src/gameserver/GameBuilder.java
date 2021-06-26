@@ -1,7 +1,20 @@
 package gameserver;
 
-public abstract class GameBuilder {
-    public static IGame buildGame(Options options) {
-        return new Game(options);
+/**
+ *
+ */
+public class GameBuilder implements IGameBuilder {
+
+    public IGame buildGame(Options options) {
+
+        IGame newGame = new Game();
+        newGame.setGameOptions(options);
+
+        // TODO: Construir tabuleiro aqui
+        // codigo
+
+        return newGame;
+
     }
+
 }

@@ -1,13 +1,8 @@
 package gameclient;
 
-import gameserver.IContentProducer;
-import gameserver.IContentReceiver;
-import gameserver.PlayerID;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 
 /**
  *  Componente gráfico correspondente à célula do tabuleiro.
@@ -23,57 +18,42 @@ import java.util.ArrayList;
  *  sua representação gráfica do conteúdo de acordo.
  */
 
-public class GUICell extends JButton implements ICommandProducer, IContentReceiver {
+public class GUICell extends JButton {
+    int content;
     Point pos;
-    ArrayList<ICommandReceiver> commandReceiverList;
-    ArrayList<IContentProducer> contentProducerList;
+    GUIBoard board;
 
-    public GUICell(Point pos) {
+    public GUICell(Point pos, GUIBoard board) {
         super();
+        this.content = 0;
         this.pos = pos;
-        this.commandReceiverList = new ArrayList<ICommandReceiver>();
-        this.contentProducerList = new ArrayList<IContentProducer>();
-        this.paint(-1);
+        this.board = board;
+        this.paint();
 
         // Remove bordas e uma interação gráfica indesejável
         this.setBorder(null);
         this.setFocusable(false);
     }
 
-    public void paint(int playerID) {
-        int tone = 255 - 51 * (playerID + 1);
+    public void paint() {
+        int tone = 255 - 51 * this.content;
         if (tone < 0) {
             tone = 0;
         }
         this.setBackground(new Color(255, tone, tone));
     }
 
+    public void update(int content) {
+        this.content = content;
+        this.paint();
+
+        // Habilita a célula apenas se estiver vazia
+        this.setEnabled(content == 0);
+    }
+
     /** Sobrescreve método de JButton. */
     @Override
     protected void fireActionPerformed(ActionEvent e) {
-        this.fireCommand(this.pos);
-    }
-
-    /** Implementa métodos de ICommandProducer. */
-    @Override
-    public void addCommandReceiver(ICommandReceiver commandReceiver) {
-        this.commandReceiverList.add(commandReceiver);
-    }
-
-    @Override
-    public void fireCommand(Point pos) {
-        for (ICommandReceiver commandReceiver : this.commandReceiverList) {
-            commandReceiver.listenCommand(pos);
-        }
-    }
-
-    /** Implementa métodos de IContentReceiver. */
-    @Override
-    public void noticeContentUpdate(IContentProducer source) {
-        int playerID = source.sendContent();
-        this.paint(playerID - 1);
-
-        // Bloqueia novos cliques
-        this.setEnabled(false);
+        this.board.cellClick(this.pos);
     }
 }

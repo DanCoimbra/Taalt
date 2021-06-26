@@ -7,11 +7,11 @@ import java.util.ArrayList;
  *  um nome, e uma lista de peças no tabuleiro das quais é dono.
  */
 public class Player {
-    PlayerID ID;
+    int ID;
     String name;
     ArrayList<Piece> pieces;
 
-    public Player(PlayerID ID, String name) {
+    public Player(int ID, String name) {
         this.ID = ID;
         this.name = name;
         this.pieces = new ArrayList<Piece>();
@@ -21,7 +21,7 @@ public class Player {
         this.pieces.add(piece);
     }
 
-    public PlayerID getID() {
+    public int getID() {
         return this.ID;
     }
 

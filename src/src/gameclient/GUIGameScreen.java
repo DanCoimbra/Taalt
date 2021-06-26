@@ -4,8 +4,6 @@ import gameserver.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
 /**
  *  Armazena e organiza os componentes gráficos correspondentes ao jogo.
@@ -16,72 +14,71 @@ import java.util.ArrayList;
  */
 
 // TODO: Consider JOptionPane for error messages, end game messages, and replay queries.
-public class GUIGameScreen extends JPanel implements ICommandReceiver, IClient {
-    public static final int MENU_SIZE = 50;
-    public static final int STATUS_SIZE = 50;
-    GUIController parentScreen;
+public class GUIGameScreen extends JPanel implements IGameScreen {
+    GUIController controller;
     IGame gameServer;
-    Output output;
     GUIGameMenu menu;
     GUIBoard board;
     GUIGameStatus status;
-    int width, height;
-    int rows, cols;
 
-    public GUIGameScreen(int width, int height, int rows, int cols, GUIController parentScreen) {
+    private final Dimension panelDimensions;
+    public static final int MENU_SIZE = 50;
+    public static final int STATUS_SIZE = 50;
+
+    public GUIGameScreen(GUIController controller) {
         super();
-        this.width = width;
-        this.height = height;
-        this.rows = rows;
-        this.cols = cols;
-        this.parentScreen = parentScreen;
+        this.controller = controller;
+        panelDimensions = controller.getWindowDimensions();
+
+        int width = this.panelDimensions.width;
+        int height = this.panelDimensions.height;
+
         this.setLayout(new BorderLayout());
         this.setSize(width, height - MENU_SIZE - STATUS_SIZE);
 
-        this.menu = new GUIGameMenu(width, MENU_SIZE);
+        this.menu = new GUIGameMenu(width, MENU_SIZE, this);
         this.add(menu, BorderLayout.PAGE_START);
-
-        this.board = new GUIBoard(this.rows, this.cols, width, height);
-        this.board.addCommandReceiver(this);
-        this.add(board, BorderLayout.CENTER);
 
         this.status = new GUIGameStatus(width, STATUS_SIZE);
         this.add(status, BorderLayout.PAGE_END);
     }
 
-    /** Constrói um GUIBoard, o preenche com GUICells, e conecta cada uma com a correspondente "gameserver.Cell". */
-    public void sync(IGame gameServer) {
-        this.board.sync(gameServer);
+    public void setupGame(IGame gameServer) {
+        this.gameServer = gameServer;
+        Output initialState = this.gameServer.getUpdate();
+
+        this.board = new GUIBoard(this.panelDimensions.width, this.panelDimensions.height, this);
+        this.board.fillBoard();
+        this.add(board, BorderLayout.CENTER);
+
+        this.status.update(initialState);
     }
 
-    /** Implementa métodos de ICommandReceiver. */
-    @Override
-    public void listenCommand(Point pos) {
-        Input input = new Input(pos);
-        this.fireInput(input);
+    /** Chama o método "IGame.receiveInput()". */
+    public void cellClick(Point pos) {
+        this.gameServer.placePiece(pos);
     }
 
-    /** Implementa métodos de IInputProducer (subsumido em IClient). */
-    @Override
-    public void addInputReceiver(IInputReceiver gameServer) {
-        this.gameServer = (IGame) gameServer;
-    }
-
-    @Override
-    public void fireInput(Input input) {
-        this.gameServer.receiveInput(input);
-    }
-
-    /** Implementa métodos de IOutputReceiver (subsumido em IClient).
+    /**
+     *  Implementa método de IGameScreen.
      *  Atualiza o mostrador dos dados do jogo (GUIGameStatus) e, se for o caso,
      *  chama "GUIController.end()" para finalizar a partida atual.
      */
-    @Override
-    public void receiveOutput(Output output) {
-        this.output = output;
+    public void updateGameStatus() {
+        Output output = this.gameServer.getUpdate();
         this.status.update(output);
         if (output.getGameCondition() == GameCondition.END) {
-            this.parentScreen.end();
+            this.endGame();
         }
     }
+
+    public void endGame() {
+        this.controller.showMainMenu();
+    }
+
+    public void updateCell(Point cellCoordinates) {
+        int cellContent = this.gameServer.getCellContent(cellCoordinates);
+        this.board.updateCell(cellCoordinates, cellContent);
+    }
+
 }

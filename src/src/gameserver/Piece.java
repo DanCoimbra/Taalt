@@ -15,7 +15,7 @@ public class Piece {
         return this.player;
     }
 
-    public PlayerID getID() {
+    public int getID() {
         return this.player.getID();
     }
 }

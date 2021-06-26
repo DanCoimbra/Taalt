@@ -1,9 +1,5 @@
 package gameclient;
 
-import gameserver.Cell;
-import gameserver.IContentProducer;
-import gameserver.IGame;
-
 import java.awt.*;
 import javax.swing.*;
 
@@ -18,46 +14,31 @@ import javax.swing.*;
  */
 
 
-public class GUIBoard extends JPanel implements ICommandReceiver, ICommandProducer {
+public class GUIBoard extends JPanel {
     private static final int CELL_GAP = 3;
     int rows, cols;
     GUICell[][] matrix;
-    ICommandReceiver commandReceiver;
+    GUIGameScreen gameScreen;
 
-    public GUIBoard(int rows, int cols, int width, int height) {
+    public GUIBoard(int width, int height, GUIGameScreen gameScreen) {
         super();
-        this.rows = rows;
-        this.cols = cols;
+        this.rows = height;
+        this.cols = width;
         this.matrix = new GUICell[rows][cols];
+        this.gameScreen = gameScreen;
         this.setPreferredSize(new Dimension(width, height));
         this.setBackground(Color.BLACK);
         this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         this.setLayout(new GridLayout(rows, cols, CELL_GAP, CELL_GAP));
-
-        GUICell guiCell;
-        for (int row = 0; row < this.rows; row++) {
-            for (int col = 0; col < this.cols; col++) {
-                Point pos = new Point(row, col);
-                guiCell = new GUICell(pos);
-                this.setCell(pos, guiCell);
-            }
-        }
     }
 
-    /** Conecta cada GUICell do GUIBoard com sua célula ContentProducer correspondente no servidor do jogo. */
-    public void sync(IGame gameServer) {
+    public void fillBoard() {
         GUICell guiCell;
         for (int row = 0; row < this.rows; row++) {
             for (int col = 0; col < this.cols; col++) {
-                guiCell = this.matrix[row][col];
-                assert guiCell != null;
-
                 Point pos = new Point(row, col);
-                IContentProducer contentProducer = gameServer.getContentProducer(pos);
-                assert contentProducer != null;
-
-                // Sincronização
-                contentProducer.addContentReceiver(guiCell);
+                guiCell = new GUICell(pos, this);
+                this.setCell(pos, guiCell);
             }
         }
     }
@@ -73,31 +54,25 @@ public class GUIBoard extends JPanel implements ICommandReceiver, ICommandProduc
         return this.insideBoard(pos) && (this.matrix[pos.x][pos.y] == null);
     }
 
-    /** Adição de componentes  */
+    /** Adição de um componente GUICell. */
     public void setCell(Point pos, GUICell cell) {
         if (isEmpty(pos)) {
-            cell.addCommandReceiver(this);
             this.matrix[pos.x][pos.y] = cell;
             this.add(cell);
         }
     }
 
-    /** Implementa métodos de ICommandReceiver. */
-    @Override
-    public void listenCommand(Point pos) {
-        this.fireCommand(pos);
+    /** Alteração de um componente GUICell a partir de GUIGameScreen. */
+    public void updateCell(Point pos, int content) {
+        if (insideBoard(pos)) {
+            GUICell cell = this.matrix[pos.x][pos.y];
+            cell.update(content);
+        }
     }
 
-    /** Implementa métodos de ICommandProducer. */
-    @Override
-    public void addCommandReceiver(ICommandReceiver commandReceiver) {
-        this.commandReceiver = commandReceiver;
+    /** Recebimento de input do usuário a partir de GUICell. */
+    public void cellClick(Point pos) {
+        this.gameScreen.cellClick(pos);
     }
-
-    @Override
-    public void fireCommand(Point pos) {
-        this.commandReceiver.listenCommand(pos);
-    }
-
 
 }
