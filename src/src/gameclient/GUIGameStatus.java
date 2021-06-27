@@ -1,6 +1,6 @@
 package gameclient;
 
-import gameserver.Output;
+import gameserver.GameStatus;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,12 +11,12 @@ import java.awt.*;
  *  não-interativo de GUIGameScreen.
  */
 public class GUIGameStatus extends JPanel {
-    int numPlayers;
-    int rounds;
-    String name;
-    JLabel numPlayersLabel;
-    JLabel roundsLabel;
-    JLabel currentPlayerLabel;
+    private int numPlayers;
+    private int rounds;
+    private String name;
+    private JLabel numPlayersLabel;
+    private JLabel roundsLabel;
+    private JLabel currentPlayerLabel;
 
     GUIGameStatus(int width, int height) {
         this.setPreferredSize(new Dimension(width, height));
@@ -39,11 +39,11 @@ public class GUIGameStatus extends JPanel {
         this.add(this.currentPlayerLabel);
     }
 
-    /** Atualiza os mostradores com novas informações. */
-    public void update(Output output) {
-        this.numPlayers = output.getNumPlayers();
-        this.rounds = output.getRounds();
-        this.name = output.getCurrentName();
+    /* Atualiza os mostradores com novas informações. */
+    public void update(GameStatus gameStatus) {
+        this.numPlayers = gameStatus.getNumberOfPlayers();
+        this.rounds = gameStatus.getCurrentRound();
+        this.name = gameStatus.getCurrentPlayer().getName();
         this.numPlayersLabel.setText("Players: " + this.numPlayers);
         this.roundsLabel.setText("Rounds: " + this.rounds);
         this.currentPlayerLabel.setText(this.name + "'s turn");

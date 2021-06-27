@@ -1,71 +1,87 @@
 package gameserver;
 
-import java.awt.*;
 import java.util.ArrayList;
 
+/**
+ * Objetos Output contêm informações do estado atual do jogo: o número total de jogadores,
+ * o número da rodada atual, o nome do jogador atual, se o modo gravidade está ativado, e
+ * se o jogo está em andamento (GameCondition.START) ou terminado (GameCondition.END).
+ */
 public class GameStatus {
-    public final static int MAX_PLAYERS = 4;
-    int m, n, k;
-    int rounds, totalPlayers, currentPlayerID;
-    ArrayList<Player> playerList;
-    GravityMode gravityMode;
-    GameCondition condition;
+    private final ArrayList<Player> playerList;
+    private GameCondition gameCondition;
+    private GravityMode gravityMode;
+    private int numberOfPlayers, currentPlayerIndex, currentRound;
+    private final int m, n, k;
+
+    private final static int MAX_PLAYERS = 4;
 
     public GameStatus(Options options) {
+        this.playerList = new ArrayList<Player>();
+        this.gameCondition = GameCondition.START;
+        this.gravityMode = options.getGravityMode();
+        this.numberOfPlayers = options.getNumPlayers();
+        this.currentPlayerIndex = 0;
+        this.currentRound = 1;
         this.m = options.getM();
         this.n = options.getN();
         this.k = options.getK();
-        this.rounds = 1;
-        this.totalPlayers = options.getNumPlayers();
-        this.currentPlayerID = 1;
-        this.playerList = new ArrayList<Player>();
-        this.gravityMode = options.getGravityMode();
-        this.condition = GameCondition.START;
 
-        for (int ID = 1; ID <= totalPlayers; ID++) {
-            assert ID <= MAX_PLAYERS;
-            String playerName = options.getPlayerName(ID);
-            Player newPlayer = new Player(ID, playerName);
+        assert numberOfPlayers < MAX_PLAYERS;
+
+        for (int i = 0; i < numberOfPlayers; i++) {
+            String playerName = options.getPlayerName(i);
+            Player newPlayer = new Player(i, playerName);
             this.playerList.add(newPlayer);
         }
     }
 
-    public void nextRound() {
-        this.rounds += 1;
-        this.currentPlayerID += 1;
-        if (this.currentPlayerID > this.totalPlayers) {
-            this.currentPlayerID = 1;
-        }
+    public Player getCurrentPlayer() {
+        return this.playerList.get(currentPlayerIndex);
+    }
+
+    public GameCondition getGameCondition() {
+        return this.gameCondition;
     }
 
     public void endGame() {
-        this.condition = GameCondition.END;
+        this.gameCondition = GameCondition.END;
     }
 
-    public Output getOutput() {
-        int players = this.totalPlayers;
-        int round = this.rounds;
-        String currentName = this.getCurrentPlayer().getName();
-        GravityMode gravityMode = this.gravityMode;
-        GameCondition condition = this.condition;
-        return new Output(players, round, currentName, gravityMode, condition, m, n, k);
+    public boolean hasGameEnded() {
+        return this.gameCondition == GameCondition.END;
     }
 
-    public int getCurrentPlayerID() {
-        return this.currentPlayerID;
-    }
-
-    public Player getCurrentPlayer() {
-        int ID = this.currentPlayerID;
-        int index = ID - 1;
-        return this.playerList.get(index);
+    public GravityMode getGravityMode() {
+        return this.gravityMode;
     }
 
     public void setGravityMode(GravityMode gravityMode) {
         this.gravityMode = gravityMode;
     }
 
-    public GravityMode getGravityMode() {
-        return this.gravityMode;
+    public void nextRound() {
+        this.currentRound += 1;
+        this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.numberOfPlayers;
+    }
+
+    public int getCurrentRound() {
+        return this.currentRound;
+    }
+
+    public int getNumberOfPlayers() {
+        return this.numberOfPlayers;
+    }
+
+    public int getM() {
+        return this.m;
+    }
+
+    public int getN() {
+        return this.n;
+    }
+
+    public int getK() {
+        return this.k;
     }
 }

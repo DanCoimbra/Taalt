@@ -6,7 +6,7 @@ package gameserver;
  *  de IContentReceiver sempre que ocorrer uma atualização no objeto Piece da célula.
  */
 public class Cell {
-    Piece piece;
+    private Piece piece;
 
     public void setPiece(Piece piece) {
         this.piece = piece;

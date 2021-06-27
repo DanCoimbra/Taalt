@@ -8,19 +8,19 @@ import gameserver.IGame;
 public interface IClient {
 
     /**
-     * Troca a visualização para o Menu Principal
+     * Troca a visualização para o Menu Principal.
      */
     void showMainMenu();
 
     /**
-     * Troca a visualização para a Tela do Jogo. Falha se uma partida válida não está em andamento.
+     * Troca a visualização para a Tela do Jogo. Lança a excessão () se uma partida válida não está em andamento.
      */
     void showGameScreen();
 
     /**
-     * Conecta um componente IGame ao gameScreen.
+     * Conecta um componente IGame à janela/visualização do jogo (GameScreen) e a configura de acordo.
      *
-     * @param gameServer Componente IGame através do qual o gameScreen se comunica para visualizar e controlar o jogo.
+     * @param gameServer Componente IGame através do qual o GameScreen se comunica para visualizar e controlar o jogo.
      */
     void setupGameScreen(IGame gameServer);
 }

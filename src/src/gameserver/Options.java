@@ -8,13 +8,11 @@ import java.util.ArrayList;
  *  requerida para vitória (k), e se o modo gravidade está ativado.
  */
 public class Options {
-    String[] inputFields;
-    int numPlayers;
-    ArrayList<String> nameList;
-    int m;
-    int n;
-    int k;
-    GravityMode gravityMode;
+    private String[] inputFields;
+    private ArrayList<String> nameList;
+    private GravityMode gravityMode;
+    private int m, n, k;
+    private int numPlayers;
 
     public Options() {
         this.inputFields = new String[]{"numPlayers", "nameList", "m", "n", "k", "gravityMode"};

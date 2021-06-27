@@ -5,17 +5,15 @@ import gameserver.IGame;
 import java.awt.*;
 import javax.swing.*;
 
-// TODO: Consider using JFrame.pack() method to dynamically adjust screen size.
-
 /**
  *  Janela principal e gerenciador da interface gráfica. Alterna entre componentes correspondentes ao menu principal
- *  (GUIMainMenu) e à visualização do jogo (GUIGameScreen). Também recebe um  componente IGame de GUIMainMenu e o envia
- *  para GUIGameScreen, que será responsável por visualizar e controlar a partida.
+ *  (GUIMainMenu) e à visualização do jogo (GUIGameScreen). Também recebe um componente IGame de GUIMainMenu, e o envia
+ *  para GUIGameScreen, que será responsável por visualizar e controlar o componente IGame (correspondente à partida).
  */
 public class GUIController extends JFrame implements IClient {
     // Janelas secundárias (Menu e Janela do Jogo)
-    private GUIMainMenu menuScreen;     // JScrollPane que contém uma lista de botões, nos quais se pode inserir opções e iniciar o jogo.
-    private GUIGameScreen gameScreen;   // JPanel que mostra a visualização de um jogo.
+    private final GUIMainMenu menuScreen;     // JScrollPane que contém os campos de configurações e botão Start.
+    private final GUIGameScreen gameScreen;   // JPanel que mostra a visualização de um jogo.
 
     // Dimensões da janela principal
     private final Dimension windowDimensions = new Dimension(600, 600);
@@ -24,7 +22,6 @@ public class GUIController extends JFrame implements IClient {
     private final String logoIconPath = "assets/logo32x32.png";
 
     public GUIController() {
-
         // Inicializa a janela principal (o próprio GUIController).
         this.setTitle(gameTitle);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -36,46 +33,40 @@ public class GUIController extends JFrame implements IClient {
         ImageIcon logoIcon = new ImageIcon(logoIconPath);
         this.setIconImage(logoIcon.getImage());
 
-        // Inicializa o menu principal e a janela do jogo.
+        // Inicializa a janela do jogo.
         this.gameScreen = new GUIGameScreen(this);
-        this.gameScreen.setVisible(false);
         this.getContentPane().add(gameScreen);
+        this.gameScreen.setVisible(false);
 
+        // Inicializa o menu principal.
         this.menuScreen = new GUIMainMenu(this);
         this.getContentPane().add(menuScreen);
+        this.gameScreen.setVisible(false);
+
+        // Mostra janela mestra.
         this.setVisible(true);
     }
 
     @Override
     public void showMainMenu() {
-        try {
-            this.menuScreen.setVisible(true);
-            this.gameScreen.setVisible(false);
-            this.revalidate();
-        } catch (NullPointerException e) {
-            // Deu problema ao remover o gameScreen ou ao adicionar menuScreen
-            System.err.println(e.getMessage());
-        }
+        this.menuScreen.setVisible(true);
+        this.gameScreen.setVisible(false);
+        this.revalidate();
     }
 
     @Override
     public void showGameScreen() {
-        try {
-            this.menuScreen.setVisible(false);
-            this.gameScreen.setVisible(true);
-            this.revalidate();
-        } catch (NullPointerException e) {
-            // Deu problema ao remover o menuScreen ou ao adicionar gameScreen
-            System.err.println(e.getMessage());
-        }
+        // TODO: Se não há partida em andamento, lançar uma excessão.
+        this.menuScreen.setVisible(false);
+        this.gameScreen.setVisible(true);
+        this.revalidate();
     }
 
     @Override
     public void setupGameScreen(IGame gameServer) {
-        this.gameScreen.setupGame(gameServer);      // Inicializa o tabuleiro do visualizador
-        gameServer.addGameViewer(this.gameScreen);  // Conecta o cliente ao servidor
+        this.gameScreen.setupGameScreen(gameServer);  // Inicializa o tabuleiro do cliente GUIGameScreen
+        gameServer.addGameViewer(this.gameScreen);    // Conecta o cliente GUIGameScreen ao servidor IGame
     }
-
 
     Dimension getWindowDimensions() {
         return windowDimensions;

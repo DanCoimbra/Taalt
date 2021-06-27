@@ -6,79 +6,82 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- *  Armazena e organiza os componentes gráficos correspondentes ao jogo.
- *
- *  Por implementar a interface ICommandReceiver, pode receber comandos de CommandProducers.
- *  Por meio do método implementado "ICommandProducer.fireCommand()", repassa tais comandos
- *  para quaisquer recipientes CommandReceiver.
+ *  Armazena e organiza os componentes gráficos correspondentes ao jogo. A barra de ferramentas
+ *  permite sair do jogo e também ajustar o modo gravidade. A barra de status exibe dados sobre
+ *  o estado atual do jogo. O tabuleiro permite inserir peças no tabuleiro do servidor.
  */
 
 // TODO: Consider JOptionPane for error messages, end game messages, and replay queries.
 public class GUIGameScreen extends JPanel implements IGameScreen {
-    GUIController controller;
-    IGame gameServer;
-    GUIGameMenu menu;
-    GUIBoard board;
-    GUIGameStatus status;
+    private GUIController controller;
+    private IGame gameServer;
+    private GUIGameToolbar toolbar;
+    private GUIBoard board;
+    private GUIGameStatus status;
 
-    private final Dimension panelDimensions;
-    public static final int MENU_SIZE = 50;
-    public static final int STATUS_SIZE = 50;
+    private final Dimension panelDimension;
+    private static final int MENU_SIZE = 50;
+    private static final int STATUS_SIZE = 50;
 
     public GUIGameScreen(GUIController controller) {
         super();
         this.controller = controller;
-        panelDimensions = controller.getWindowDimensions();
 
-        int width = this.panelDimensions.width;
-        int height = this.panelDimensions.height;
-
+        /* Configuração visual do JPanel. */
+        this.panelDimension = controller.getWindowDimensions();
         this.setLayout(new BorderLayout());
-        this.setSize(width, height - MENU_SIZE - STATUS_SIZE);
+        this.setSize(this.panelDimension.width, this.panelDimension.height - MENU_SIZE - STATUS_SIZE);
 
-        this.menu = new GUIGameMenu(width, MENU_SIZE, this);
-        this.add(menu, BorderLayout.PAGE_START);
+        /* Cria a barra de ferramentas e a barra de status da exibição do jogo. */
+        this.toolbar = new GUIGameToolbar(this.panelDimension.width, MENU_SIZE, this);
+        this.add(toolbar, BorderLayout.PAGE_START);
 
-        this.status = new GUIGameStatus(width, STATUS_SIZE);
+        this.status = new GUIGameStatus(this.panelDimension.width, STATUS_SIZE);
         this.add(status, BorderLayout.PAGE_END);
     }
 
-    public void setupGame(IGame gameServer) {
+    @Override
+    public void setupGameScreen(IGame gameServer) {
         this.gameServer = gameServer;
-        Output initialState = this.gameServer.getUpdate();
 
-        this.board = new GUIBoard(this.panelDimensions.width, this.panelDimensions.height, this);
-        this.board.fillBoard(initialState.getM(), initialState.getN());
-        this.add(board, BorderLayout.CENTER);
+        //TODO: REVER REFATORAÇÃO
+        GameStatus initialState = this.gameServer.getGameStatus();
 
         this.status.update(initialState);
+
+        this.board = new GUIBoard(this.panelDimension, this);
+        this.board.fillBoard(initialState.getM(), initialState.getN());
+        this.add(board, BorderLayout.CENTER);
     }
 
-    /** Chama o método "IGame.receiveInput()". */
-    public void cellClick(Point pos) {
-        this.gameServer.placePiece(pos);
-    }
-
-    /**
-     *  Implementa método de IGameScreen.
-     *  Atualiza o mostrador dos dados do jogo (GUIGameStatus) e, se for o caso,
-     *  chama "GUIController.end()" para finalizar a partida atual.
-     */
+    @Override
     public void updateGameStatus() {
-        Output output = this.gameServer.getUpdate();
+
+        //TODO: REVER REFATORAÇÃO
+        GameStatus output = this.gameServer.getGameStatus();
+
         this.status.update(output);
-        if (output.getGameCondition() == GameCondition.END) {
+        if (output.hasGameEnded()) {
             this.endGame();
         }
     }
 
-    public void endGame() {
-        this.controller.showMainMenu();
-    }
-
+    @Override
     public void updateCell(Point cellCoordinates) {
         int cellContent = this.gameServer.getCellContent(cellCoordinates);
         this.board.updateCell(cellCoordinates, cellContent);
     }
 
+    /* Envia ao servidor IGame as coordenadas onde o usuário clicou. */
+    public void cellClick(Point pos) {
+        this.gameServer.placePiece(pos);
+    }
+
+    public void setGravityMode(GravityMode gravityMode) {
+        this.gameServer.setGravityMode(gravityMode);
+    }
+
+    public void endGame() {
+        this.controller.showMainMenu();
+    }
 }

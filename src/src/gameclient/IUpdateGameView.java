@@ -8,7 +8,8 @@ import java.awt.*;
 public interface IUpdateGameView {
 
     /**
-     * Atualiza o painel com informações do status do jogo, como vez de jogar, se o modo gravidade foi habilitado, etc...
+     * Atualiza o painel com informações do estado atual do jogo, a exemplo do nome do jogador atual.
+     * Se o estado atual do jogo houver terminado, a visualização do jogo também cessa.
      */
     void updateGameStatus();
 

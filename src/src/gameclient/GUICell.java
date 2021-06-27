@@ -5,23 +5,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 
 /**
- *  Componente gráfico correspondente à célula do tabuleiro.
- *
- *  Cliques do usuário acionam o método sobrescrito "JButton.fireActionperformed()".
- *
- *  GUICell usa este método para enviar comandos para quaisquer recipientes CommandReceiver,
- *  por meio do método implementado "ICommandProducer.fireCommand()".
- *
- *  Por implementar a interface IContentReceiver, pode receber avisos de ContentProducers
- *  de que houve uma atualização no conteúdo destes, via "IContentReceiver.noticeContentUpdate()".
- *  Ao receber o aviso, inquirirá o ContentProducer sobre seu novo conteúdo, e atualizará
- *  sua representação gráfica do conteúdo de acordo.
+ *  Componente gráfico correspondente à célula do tabuleiro. Cliques do usuário acionam o método
+ *  sobrescrito "JButton.fireActionperformed()", que passará o comando a GUIBoard.
+ *  Recebe atualizações de conteúdo a partir de GUIBoard.
  */
 
 public class GUICell extends JButton {
-    int content;
-    Point pos;
-    GUIBoard board;
+    private GUIBoard board;
+    private Point pos;
+    private int content;
+
+    private final int MAX_PLAYERS = 4;
 
     public GUICell(Point pos, GUIBoard board) {
         super();
@@ -35,12 +29,15 @@ public class GUICell extends JButton {
         this.setFocusable(false);
     }
 
-    public void paint() {
-        int tone = 255 - 51 * this.content;
-        if (tone < 0) {
-            tone = 0;
-        }
-        this.setBackground(new Color(255, tone, tone));
+    private void paint() {
+        this.setBackground(getPlayerColor(this.content));
+    }
+
+    // TODO: Fix
+    private Color getPlayerColor(int playerID) {
+        assert playerID <= MAX_PLAYERS;
+        int playerTone = 255 - playerID * (255 / MAX_PLAYERS);
+        return new Color(255, playerTone, playerTone);
     }
 
     public void update(int content) {

@@ -17,19 +17,24 @@ import java.util.ArrayList;
  *  tabuleiro (via IContentProducerViewer).
  */
 public class Game implements IGame {
-    ArrayList<IUpdateGameView> gameViewerList;
-    GameStatus status;
-    Board board;
+    private ArrayList<IUpdateGameView> gameViewerList;
+    private GameStatus status;
+    private Board board;
 
     public Game() {
+        this.gameViewerList = new ArrayList<IUpdateGameView>();
     }
 
-    public void setGameOptions(Options options) {
-        this.gameViewerList = new ArrayList<IUpdateGameView>();
+    public void setGameStatus(Options options) {
         this.status = new GameStatus(options);
+    }
 
-        Dimension boardDimension = new Dimension(options.getM(), options.getN());
-        this.board = new Board(this, options.getK(), options.getGravityMode(), boardDimension);
+    public void setBoard(Board board) {
+        /* Garante que "ninguém" (i.e. o Sr. Coimbra) use essa função de maneira errada, recriando um jogo com o mesmo
+         * objeto ao invés de usar o GameBuilder pra criar um novo objeto jogo */
+        if (this.board == null) {
+            this.board = board;
+        }
     }
 
     /**
@@ -82,8 +87,8 @@ public class Game implements IGame {
     }
 
     @Override
-    public Output getUpdate() {
-        return this.status.getOutput();
+    public GameStatus getGameStatus() {
+        return this.status;
     }
 
     /** Método de IGameView. Permite que agentes externos observem o conteúdo de uma célula. */

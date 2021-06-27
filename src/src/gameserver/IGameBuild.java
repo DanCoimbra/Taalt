@@ -9,7 +9,7 @@ public interface IGameBuild {
      *
      * @param options Objeto contendo todas as opções de jogo.
      */
-    void setGameOptions(Options options);
+    void setGameStatus(Options options);
 
     // TODO: Método para settar o tabuleiro, que será construído pelo COMPONENTE GameBuilder
 

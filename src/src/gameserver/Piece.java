@@ -5,7 +5,7 @@ package gameserver;
  *  a funcionalidade de armazenar a identidade de seu Player dono.
  */
 public class Piece {
-    Player player;
+    private Player player;
 
     public Piece(Player player) {
         this.player = player;

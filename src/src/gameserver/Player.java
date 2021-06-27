@@ -7,9 +7,9 @@ import java.util.ArrayList;
  *  um nome, e uma lista de peças no tabuleiro das quais é dono.
  */
 public class Player {
-    int ID;
-    String name;
-    ArrayList<Piece> pieces;
+    private ArrayList<Piece> pieces;
+    private String name;
+    private int ID;
 
     public Player(int ID, String name) {
         this.ID = ID;

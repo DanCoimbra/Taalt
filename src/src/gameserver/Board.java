@@ -8,11 +8,11 @@ import java.awt.*;
  *  informação a função "Board.hasWon()" detecta se um jogador ganhou.
  */
 public class Board {
-    Game game;
-    int successiveCellsToWin;
-    int rows, cols;
-    GravityMode gravityMode;
-    Cell[][] matrix;
+    private Game game;
+    private int successiveCellsToWin;
+    private int rows, cols;
+    private GravityMode gravityMode;
+    private Cell[][] matrix;
 
     Board(Game game, int successiveCellsToWin, GravityMode gravityMode, Dimension dimension) {
         this.game = game;
@@ -20,6 +20,7 @@ public class Board {
         this.gravityMode = gravityMode;
         this.rows = (int) dimension.getWidth();
         this.cols = (int) dimension.getHeight();
+
         this.matrix = new Cell[this.rows][this.cols];
         for (int row = 0; row < this.rows; row++) {
             for (int col = 0; col < this.cols; col++) {
