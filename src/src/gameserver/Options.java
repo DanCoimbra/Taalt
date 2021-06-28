@@ -1,6 +1,7 @@
 package gameserver;
 
 import java.util.ArrayList;
+import java.lang.Math;
 
 /**
  *  Objetos Options contêm especificações sobre uma partida de Taalt: o número de jogadores,
@@ -8,20 +9,21 @@ import java.util.ArrayList;
  *  requerida para vitória (k), e se o modo gravidade está ativado.
  */
 public class Options {
-    private String[] inputFields;
-    private ArrayList<String> nameList;
+    private final String[] inputFields;
+    private final ArrayList<String> nameList;
     private GravityMode gravityMode;
     private int m, n, k;
     private int numPlayers;
 
+    public static final int MIN_PLAYERS = 2;
+    public static final int MAX_PLAYERS = 4;
+    public static final int MIN_DIMENSION = 3;
+    public static final int MAX_DIMENSION = 9;
+    public static final int MIN_K = 3;
+
     public Options() {
         this.inputFields = new String[]{"numPlayers", "nameList", "m", "n", "k", "gravityMode"};
-        this.numPlayers = 2;
         this.nameList = new ArrayList<String>();
-        this.m = 3;
-        this.n = 3;
-        this.k = 3;
-        this.gravityMode = GravityMode.DISABLED;
     }
 
     /** Métodos que permitem ao cliente construir um menu de configurações */
@@ -58,16 +60,33 @@ public class Options {
 
     /** Setters e getters das configurações */
     public void setNumPlayers(String inputText) {
-        int numPlayers = Integer.parseInt(inputText);
-        if (2 <= numPlayers && numPlayers <= 4) {
-            this.numPlayers = numPlayers;
+        int numPlayers;
+
+        try {
+            numPlayers = Integer.parseInt(inputText);
+            if (MIN_PLAYERS <= numPlayers && numPlayers <= MAX_PLAYERS) {
+                this.numPlayers = numPlayers;
+            } else {
+                this.numPlayers = MIN_PLAYERS;
+            }
+        } catch (NumberFormatException e) {
+            this.numPlayers = MIN_PLAYERS;
         }
     }
 
     public void setPlayerNames(String inputText) {
-        String[] nameList = inputText.split(",");
-        for (String name : nameList) {
-            this.addPlayerName(name);
+        if (inputText.equals("")) {
+            for (int i = 0; i < MAX_PLAYERS; i++) {
+                this.nameList.add("Default name");
+            }
+        } else {
+            String[] inputNames = inputText.split(",");
+            for (String name : inputNames) {
+                this.addPlayerName(name);
+            }
+            while (this.nameList.size() < this.numPlayers) {
+                this.addPlayerName("Default name");
+            }
         }
     }
 
@@ -76,23 +95,41 @@ public class Options {
     }
 
     public void setM(String inputText) {
-        int m = Integer.parseInt(inputText);
-        if (3 <= m && m <= 10) {
-            this.m = m;
+        try {
+            int m = Integer.parseInt(inputText);
+            if (MIN_DIMENSION <= m && m <= MAX_DIMENSION) {
+                this.m = m;
+            }
+        }
+        catch (NumberFormatException e) {
+            this.m = MIN_DIMENSION;
         }
     }
 
     public void setN(String inputText) {
-        int n = Integer.parseInt(inputText);
-        if (3 <= n && n <= 10) {
-            this.n = n;
+        try {
+            int n = Integer.parseInt(inputText);
+            if (MIN_DIMENSION <= n && n <= MAX_DIMENSION) {
+                this.n = n;
+            }
+        }
+        catch (NumberFormatException e) {
+            this.n = MIN_DIMENSION;
         }
     }
 
     public void setK(String inputText) {
-        int k = Integer.parseInt(inputText);
-        if (3 <= k && k <= 10) {
-            this.k = k;
+        try {
+            int k = Integer.parseInt(inputText);
+            int max_k = Math.max(this.m, this.n);
+            if (MIN_K <= k && k <= max_k) {
+                this.k = k;
+            } else {
+                this.k = MIN_K;
+            }
+        }
+        catch (NumberFormatException e) {
+            this.k = MIN_K;
         }
     }
 
@@ -104,6 +141,7 @@ public class Options {
             case "l", "left" -> this.gravityMode = GravityMode.LEFT;
             case "r", "right" -> this.gravityMode = GravityMode.RIGHT;
             case "o", "off" -> this.gravityMode = GravityMode.DISABLED;
+            default -> this.gravityMode = GravityMode.DISABLED;
         }
     }
 
@@ -111,10 +149,8 @@ public class Options {
         return this.numPlayers;
     }
 
-    public String getPlayerName(int ID) {
-        int index = ID - 1;
-        //return this.nameList.get(index);
-        return "Ana";
+    public String getPlayerName(int index) {
+        return this.nameList.get(index);
     }
 
     public int getM() {

@@ -31,7 +31,7 @@ public class GameStatus {
 
         for (int i = 0; i < numberOfPlayers; i++) {
             String playerName = options.getPlayerName(i);
-            Player newPlayer = new Player(i, playerName);
+            Player newPlayer = new Player(i + 1, playerName);
             this.playerList.add(newPlayer);
         }
     }

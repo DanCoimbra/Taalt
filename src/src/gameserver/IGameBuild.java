@@ -11,6 +11,9 @@ public interface IGameBuild {
      */
     void setGameStatus(Options options);
 
-    // TODO: Método para settar o tabuleiro, que será construído pelo COMPONENTE GameBuilder
-
+    /**
+     * Conecta o tabuleiro ao jogo.
+     * @param board Objeto do tabuleiro.
+     */
+    void setBoard(Board board);
 }

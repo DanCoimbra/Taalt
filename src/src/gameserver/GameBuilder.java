@@ -12,7 +12,7 @@ public class GameBuilder implements IGameBuilder {
         newGame.setGameStatus(options);
 
         Dimension boardDimension = new Dimension(options.getM(), options.getN());
-        Board newBoard = new Board(newGame, options.getK(), options.getGravityMode(), boardDimension);
+        Board newBoard = new Board(newGame, boardDimension, options.getK(), options.getGravityMode());
         newGame.setBoard(newBoard);
 
         return newGame;

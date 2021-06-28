@@ -1,8 +1,10 @@
 package gameclient;
 
-import gameserver.*;
+import gameserver.IGameBuilder;
+import gameserver.IGame;
+import gameserver.GameBuilder;
+import gameserver.Options;
 
-import java.util.ArrayList;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -15,7 +17,7 @@ import javax.swing.*;
  */
 public class GUIMainMenu extends JScrollPane implements IMainMenu, ActionListener {
     private final GUIController controller;
-    private final Options options;      // Uma vez criado o objeto, ele não muda, só os atributos dele.
+    private final Options options;
     private InputPanel[] inputPanelList;
 
     private final String titleScreenLogo = "assets/titlescreen200x60.png";
@@ -60,9 +62,7 @@ public class GUIMainMenu extends JScrollPane implements IMainMenu, ActionListene
         for (InputPanel inputPanel : this.inputPanelList) {
             String inputID   = inputPanel.inputID;
             String inputText = inputPanel.inputTextArea.getText();
-            if (inputText.length() > 0) {
-                this.options.setOption(inputID, inputText);
-            }
+            this.options.setOption(inputID, inputText);
         }
         this.createNewGame();
     }

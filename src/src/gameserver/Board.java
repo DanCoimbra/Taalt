@@ -8,18 +8,18 @@ import java.awt.*;
  *  informação a função "Board.hasWon()" detecta se um jogador ganhou.
  */
 public class Board {
-    private Game game;
-    private int successiveCellsToWin;
-    private int rows, cols;
-    private GravityMode gravityMode;
     private Cell[][] matrix;
+    private Game game;
+    private final int rows, cols;
+    private final int successiveCellsToWin;
+    private GravityMode gravityMode;
 
-    Board(Game game, int successiveCellsToWin, GravityMode gravityMode, Dimension dimension) {
+    Board(Game game, Dimension dimension, int successiveCellsToWin, GravityMode gravityMode) {
         this.game = game;
         this.successiveCellsToWin = successiveCellsToWin;
         this.gravityMode = gravityMode;
-        this.rows = (int) dimension.getWidth();
-        this.cols = (int) dimension.getHeight();
+        this.rows = dimension.width;
+        this.cols = dimension.height;
 
         this.matrix = new Cell[this.rows][this.cols];
         for (int row = 0; row < this.rows; row++) {
@@ -29,27 +29,21 @@ public class Board {
         }
     }
 
-    public int getCellContent(Point pos) {
-        Cell cell = this.getCell(pos);
-        assert cell != null;
-        return cell.getContent();
-    }
-
     public Cell getCell(Point pos) {
-        if (insideBoard(pos)) {
+        if (isInsideBoard(pos)) {
             return this.matrix[pos.x][pos.y];
         } else {
             return null;
         }
     }
 
-    public boolean insideBoard(Point pos) {
+    private boolean isInsideBoard(Point pos) {
         boolean rowInside = (pos.x >= 0 && pos.x < this.rows);
         boolean colInside = (pos.y >= 0 && pos.y < this.cols);
         return rowInside && colInside;
     }
 
-    public boolean isEmpty(Point pos) {
+    private boolean isEmpty(Point pos) {
         Cell cell = this.getCell(pos);
         assert cell != null;
         return cell.isEmpty();
@@ -61,12 +55,11 @@ public class Board {
      *  Termina por avisar o controlador de jogo (Game) de que houve alteração naquela posição.
      */
     public boolean fillCell(Point pos, Player player) {
-        if (this.insideBoard(pos) && this.isEmpty(pos)) {
+        if (this.isInsideBoard(pos) && this.isEmpty(pos)) {
             Cell cell = this.getCell(pos);
             assert cell != null;
 
             Piece piece = new Piece(player);
-            player.addPiece(piece);
             cell.setPiece(piece);
 
             return true;
@@ -83,7 +76,7 @@ public class Board {
             while (true) {
                 parsePos.x += fallDirection[0];
                 parsePos.y += fallDirection[1];
-                if (this.insideBoard(parsePos) && this.isEmpty(parsePos)) {
+                if (this.isInsideBoard(parsePos) && this.isEmpty(parsePos)) {
                     lastEmptyPos.x = parsePos.x;
                     lastEmptyPos.y = parsePos.y;
                 } else {
@@ -114,43 +107,32 @@ public class Board {
     }
 
     public void fallBoard() {
-        if (this.gravityMode != GravityMode.DISABLED) {
-            int rowStart = 0;
-            int colStart = 0;
-            int rowStep = 1;
-            int colStep = 1;
-            int rowEnd = this.rows - 1;
-            int colEnd = this.cols - 1;
-            switch (gravityMode) {
-                case DOWN -> {
-                    rowStart = this.rows - 1;
-                    rowStep = -1;
-                    rowEnd = 0;
-                }
-                case RIGHT -> {
-                    colStart = this.cols - 1;
-                    colStep = -1;
-                    colEnd = 0;
+        if (this.gravityMode == GravityMode.UP || this.gravityMode == GravityMode.LEFT) {
+            for (int row = 0; row < this.rows; row += 1) {
+                for (int col = 0; col < this.cols; col += 1) {
+                    Point pos = new Point(row, col);
+                    Point posFallen = fallPiece(pos);
+                    if (posFallen != null) {
+                        this.game.cellUpdate(pos);
+                        this.game.cellUpdate(posFallen);
+                    }
                 }
             }
-
-            for (int row = rowStart; row <= rowEnd; row += rowStep) {
-                for (int col = colStart; col <= colEnd; col += colStep) {
+        }
+        else if (this.gravityMode == GravityMode.DOWN || this.gravityMode == GravityMode.RIGHT) {
+            for (int row = this.rows - 1; row >= 0; row -= 1) {
+                for (int col = this.cols - 1; col >= 0; col -= 1) {
                     Point pos = new Point(row, col);
-                    Cell cell = this.getCell(pos);
-                    if (cell != null) {
-                        Point posFallen = fallPiece(pos);
-                        if (posFallen != null) {
-                            this.game.cellUpdate(pos);
-                            this.game.cellUpdate(posFallen);
-                        }
+                    Point posFallen = fallPiece(pos);
+                    if (posFallen != null) {
+                        this.game.cellUpdate(pos);
+                        this.game.cellUpdate(posFallen);
                     }
                 }
             }
         }
         this.game.gameUpdate();
     }
-
 
     /**
      *  Determina se um jogador venceu. Para tornar tal determinação mais eficiente,
@@ -191,7 +173,7 @@ public class Board {
                 rowParse = rowSelected;
                 colParse = colSelected;
                 consecutive = 0;
-                while (this.insideBoard(new Point(rowParse, colParse))) {
+                while (this.isInsideBoard(new Point(rowParse, colParse))) {
                     cellParse = this.matrix[rowParse][colParse];
                     if (cellParse.getContent() == player.getID()) {
                         consecutive++;
@@ -213,5 +195,4 @@ public class Board {
         this.gravityMode = gravityMode;
         this.fallBoard();
     }
-
 }

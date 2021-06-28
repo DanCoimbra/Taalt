@@ -1,5 +1,7 @@
 package gameclient;
 
+import gameserver.Cell;
+
 import java.awt.*;
 import javax.swing.*;
 
@@ -52,14 +54,14 @@ public class GUIBoard extends JPanel {
     }
 
     /* Abaixo, dois métodos de verificação de consistência interna para quaisquer adição de componentes. */
-    public boolean insideBoard(Point pos) {
+    private boolean isInsideBoard(Point pos) {
         boolean rowInside = (pos.x >= 0 && pos.x < this.rows);
         boolean colInside = (pos.y >= 0 && pos.y < this.cols);
         return rowInside && colInside;
     }
 
-    public boolean isEmpty(Point pos) {
-        return this.insideBoard(pos) && (this.matrix[pos.x][pos.y] == null);
+    private boolean isEmpty(Point pos) {
+        return this.isInsideBoard(pos) && (this.matrix[pos.x][pos.y] == null);
     }
 
     /* Recebimento de input do usuário, a partir de GUICell. Input passado a GUIGameScreen. */
@@ -68,10 +70,10 @@ public class GUIBoard extends JPanel {
     }
 
     /* Recebimento de output do servidor, a partir de GUIGameScreen. Output passado a GUICell. */
-    public void updateCell(Point pos, int content) {
-        if (insideBoard(pos)) {
-            GUICell cell = this.matrix[pos.x][pos.y];
-            cell.update(content);
+    public void updateCell(Point pos, Cell cell) {
+        if (isInsideBoard(pos)) {
+            GUICell guiCell = this.matrix[pos.x][pos.y];
+            guiCell.update(cell);
         }
     }
 

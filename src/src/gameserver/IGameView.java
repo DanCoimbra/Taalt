@@ -17,12 +17,12 @@ public interface IGameView {
     GameStatus getGameStatus();
 
     /**
-     * TODO: FUNÇÃO QUE DEVE SER ESTIRPADA DAQUI
+     * Retorna uma célula do tabuleiro dada sua posição.
      *
-     * @param pos Posição da célula
-     * @return ID do player que ocupa a célula
+     * @param pos Posição da célula no tabuleiro.
+     * @return Célula.
      */
-    int getCellContent(Point pos);
+    Cell getCell(Point pos);
 
     /**
      * Conecta um visualizador ao servidor, para que este possa notificá-lo de mudanças no jogo.
@@ -30,4 +30,11 @@ public interface IGameView {
      * @param gameScreen Visualizador do jogo.
      */
     void addGameViewer(IUpdateGameView gameScreen);
+
+    /**
+     * Atualiza todos os visualizadores de uma possível mudança na célula especificada.
+     *
+     * @param pos Coordenadas da célula.
+     */
+    void cellUpdate(Point pos);
 }

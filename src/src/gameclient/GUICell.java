@@ -1,5 +1,8 @@
 package gameclient;
 
+import gameserver.Cell;
+import gameserver.Piece;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -13,13 +16,10 @@ import java.awt.event.ActionEvent;
 public class GUICell extends JButton {
     private GUIBoard board;
     private Point pos;
-    private int content;
-
-    private final int MAX_PLAYERS = 4;
+    private Cell cell;
 
     public GUICell(Point pos, GUIBoard board) {
         super();
-        this.content = 0;
         this.pos = pos;
         this.board = board;
         this.paint();
@@ -30,22 +30,21 @@ public class GUICell extends JButton {
     }
 
     private void paint() {
-        this.setBackground(getPlayerColor(this.content));
+        Piece p;
+
+        if (this.cell != null && (p = this.cell.getPiece()) != null) {
+            this.setBackground(p.getPlayer().getColor());
+        } else {
+            this.setBackground(new Color(255,255,255));
+        }
     }
 
-    // TODO: Fix
-    private Color getPlayerColor(int playerID) {
-        assert playerID <= MAX_PLAYERS;
-        int playerTone = 255 - playerID * (255 / MAX_PLAYERS);
-        return new Color(255, playerTone, playerTone);
-    }
-
-    public void update(int content) {
-        this.content = content;
+    public void update(Cell cell) {
+        this.cell = cell;
         this.paint();
 
         // Habilita a célula apenas se estiver vazia
-        this.setEnabled(content == 0);
+        this.setEnabled(cell.isEmpty());
     }
 
     /** Sobrescreve método de JButton. */

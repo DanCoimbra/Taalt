@@ -1,6 +1,9 @@
 package gameclient;
 
-import gameserver.*;
+import gameserver.Cell;
+import gameserver.IGame;
+import gameserver.GameStatus;
+import gameserver.GravityMode;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,14 +16,16 @@ import java.awt.*;
 
 // TODO: Consider JOptionPane for error messages, end game messages, and replay queries.
 public class GUIGameScreen extends JPanel implements IGameScreen {
-    private GUIController controller;
+    private final GUIController controller;
+    private final Dimension gameScreenDimension;
     private IGame gameServer;
-    private GUIGameToolbar toolbar;
-    private GUIBoard board;
-    private GUIGameStatus status;
 
-    private final Dimension panelDimension;
-    private static final int MENU_SIZE = 50;
+    // Elementos Swing contidos no painel.
+    private GUIBoard board;
+    private final GUIGameStatus gameStatusPanel;
+    private final GUIGameToolbar toolbar;
+
+    private static final int MENU_SIZE = 80;
     private static final int STATUS_SIZE = 50;
 
     public GUIGameScreen(GUIController controller) {
@@ -28,48 +33,48 @@ public class GUIGameScreen extends JPanel implements IGameScreen {
         this.controller = controller;
 
         /* Configuração visual do JPanel. */
-        this.panelDimension = controller.getWindowDimensions();
+        this.gameScreenDimension = controller.getWindowDimensions();
         this.setLayout(new BorderLayout());
-        this.setSize(this.panelDimension.width, this.panelDimension.height - MENU_SIZE - STATUS_SIZE);
+        this.setSize(this.gameScreenDimension.width, this.gameScreenDimension.height - MENU_SIZE - STATUS_SIZE);
 
         /* Cria a barra de ferramentas e a barra de status da exibição do jogo. */
-        this.toolbar = new GUIGameToolbar(this.panelDimension.width, MENU_SIZE, this);
+        this.toolbar = new GUIGameToolbar(this.gameScreenDimension.width, MENU_SIZE, this);
         this.add(toolbar, BorderLayout.PAGE_START);
 
-        this.status = new GUIGameStatus(this.panelDimension.width, STATUS_SIZE);
-        this.add(status, BorderLayout.PAGE_END);
+        this.gameStatusPanel = new GUIGameStatus(this.gameScreenDimension.width, STATUS_SIZE);
+        this.add(gameStatusPanel, BorderLayout.PAGE_END);
     }
 
     @Override
     public void setupGameScreen(IGame gameServer) {
         this.gameServer = gameServer;
 
-        //TODO: REVER REFATORAÇÃO
         GameStatus initialState = this.gameServer.getGameStatus();
+        this.gameStatusPanel.update(initialState);
 
-        this.status.update(initialState);
+        if (this.board != null) {
+            this.remove(this.board);
+        }
 
-        this.board = new GUIBoard(this.panelDimension, this);
+        this.board = new GUIBoard(this.gameScreenDimension, this);
         this.board.fillBoard(initialState.getM(), initialState.getN());
         this.add(board, BorderLayout.CENTER);
     }
 
     @Override
     public void updateGameStatus() {
+        GameStatus gameStatus = this.gameServer.getGameStatus();
+        this.gameStatusPanel.update(gameStatus);
 
-        //TODO: REVER REFATORAÇÃO
-        GameStatus output = this.gameServer.getGameStatus();
-
-        this.status.update(output);
-        if (output.hasGameEnded()) {
+        if (gameStatus.hasGameEnded()) {
             this.endGame();
         }
     }
 
     @Override
     public void updateCell(Point cellCoordinates) {
-        int cellContent = this.gameServer.getCellContent(cellCoordinates);
-        this.board.updateCell(cellCoordinates, cellContent);
+        Cell cell = this.gameServer.getCell(cellCoordinates);
+        this.board.updateCell(cellCoordinates, cell);
     }
 
     /* Envia ao servidor IGame as coordenadas onde o usuário clicou. */
